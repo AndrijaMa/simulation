@@ -10,3 +10,10 @@ venv/
 # os / editor
 .DS_Store
 *.swp
+
+# kafka TLS material (keep the folder + README, not the secrets)
+certs/*.pem
+certs/*.key
+certs/*.crt
+certs/*.p12
+certs/*.jks

@@ -9,9 +9,19 @@ BASE = pathlib.Path(__file__).parent
 DATA_DIR = pathlib.Path(os.environ.get("TELEMETRY_DIR", str(BASE / "telemetry")))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "orvill.ddns.net:9092")
-KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "connectedcar")
+KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "orvill.ddns.net:9093")
+KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "ConnectedCar1")
 KAFKA_ENABLED = os.environ.get("KAFKA_ENABLED", "1") not in ("0", "false", "False", "")
+# transport security: PLAINTEXT | SSL | SASL_PLAINTEXT | SASL_SSL
+KAFKA_SECURITY_PROTOCOL = os.environ.get("KAFKA_SECURITY_PROTOCOL", "SSL")
+KAFKA_SSL_CAFILE = os.environ.get("KAFKA_SSL_CAFILE") or None
+KAFKA_SSL_CERTFILE = os.environ.get("KAFKA_SSL_CERTFILE") or None
+KAFKA_SSL_KEYFILE = os.environ.get("KAFKA_SSL_KEYFILE") or None
+KAFKA_SSL_PASSWORD = os.environ.get("KAFKA_SSL_PASSWORD") or None
+KAFKA_SSL_CHECK_HOSTNAME = os.environ.get("KAFKA_SSL_CHECK_HOSTNAME", "0") not in ("0", "false", "False", "")
+KAFKA_SASL_MECHANISM = os.environ.get("KAFKA_SASL_MECHANISM") or None
+KAFKA_SASL_USERNAME = os.environ.get("KAFKA_SASL_USERNAME") or None
+KAFKA_SASL_PASSWORD = os.environ.get("KAFKA_SASL_PASSWORD") or None
 RETRY_BACKOFF_S = 15.0
 
 app = Flask(__name__)
@@ -36,7 +46,7 @@ def get_producer():
             return _producer
         try:
             from kafka import KafkaProducer
-            _producer = KafkaProducer(
+            kw = dict(
                 bootstrap_servers=[b.strip() for b in KAFKA_BROKER.split(",") if b.strip()],
                 value_serializer=lambda v: json.dumps(v).encode("utf-8"),
                 key_serializer=lambda k: k.encode("utf-8") if k else None,
@@ -46,7 +56,23 @@ def get_producer():
                 request_timeout_ms=5000,
                 max_block_ms=5000,
                 api_version_auto_timeout_ms=5000,
+                security_protocol=KAFKA_SECURITY_PROTOCOL,
             )
+            if "SSL" in KAFKA_SECURITY_PROTOCOL:
+                kw["ssl_check_hostname"] = KAFKA_SSL_CHECK_HOSTNAME
+                if KAFKA_SSL_CAFILE:
+                    kw["ssl_cafile"] = KAFKA_SSL_CAFILE
+                if KAFKA_SSL_CERTFILE:
+                    kw["ssl_certfile"] = KAFKA_SSL_CERTFILE
+                if KAFKA_SSL_KEYFILE:
+                    kw["ssl_keyfile"] = KAFKA_SSL_KEYFILE
+                if KAFKA_SSL_PASSWORD:
+                    kw["ssl_password"] = KAFKA_SSL_PASSWORD
+            if KAFKA_SASL_MECHANISM:
+                kw["sasl_mechanism"] = KAFKA_SASL_MECHANISM
+                kw["sasl_plain_username"] = KAFKA_SASL_USERNAME
+                kw["sasl_plain_password"] = KAFKA_SASL_PASSWORD
+            _producer = KafkaProducer(**kw)
             _kafka["connected"] = True
             _kafka["error"] = None
         except Exception as e:  # NoBrokersAvailable, DNS, etc.
@@ -101,6 +127,7 @@ def health():
             "enabled": KAFKA_ENABLED,
             "broker": KAFKA_BROKER,
             "topic": KAFKA_TOPIC,
+            "security_protocol": KAFKA_SECURITY_PROTOCOL,
             "connected": _kafka["connected"],
             "sent": _kafka["sent"],
             "error": _kafka["error"],
