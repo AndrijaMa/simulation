@@ -1,5 +1,7 @@
 # generated telemetry output (keep the folder, not the data)
 telemetry/*.ndjson
+# persisted runtime settings (may contain the SASL password)
+telemetry/*.json
 
 # python
 __pycache__/

@@ -111,6 +111,23 @@
             -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
   .map-chip .k{font-size:9px;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted);display:block;margin-bottom:2px}
   .map-chip .v{font-size:14px;font-variant-numeric:tabular-nums;font-weight:500;color:var(--txt)}
+  .fleet-panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;overflow:auto;max-height:480px}
+  .fleet-title{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:2px 4px 10px}
+  .fleet-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+  .fleet-row:hover{background:#1c1c1e}
+  .fleet-row.on{background:rgba(74,140,255,.14);border-color:rgba(74,140,255,.4)}
+  .fleet-row .fl-dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .fleet-row .fl-id{font-weight:600;width:34px}
+  .fleet-row .fl-soc{width:42px;text-align:right;font-variant-numeric:tabular-nums}
+  .fleet-row .fl-spd{width:66px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+  .fleet-row .fl-phase{flex:1;text-align:right;font-size:11px;color:var(--muted)}
+  .settings-form{max-width:580px;display:flex;flex-direction:column;gap:14px;animation:slideIn .4s var(--ease)}
+  .settings-form .fld{display:flex;flex-direction:column;gap:5px}
+  .settings-form label{font-size:12px;color:var(--muted)}
+  .settings-form input,.settings-form select{background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:9px 11px;font-size:13px}
+  .settings-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+  .settings-result{font-size:13px;padding:6px 0;min-height:20px}
+  .settings-result.ok{color:#30d158} .settings-result.err{color:#ff453a}
   .map-zoom{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;
             border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(0,0,0,.55);
             -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
@@ -242,7 +259,7 @@
 
 <script>
 /* ---- Telemetry payload (embedded so the file works by double-click, no server needed) ---- */
-const DATA = {"vehicle_id":"VLTTGAAA1PN012945","make":"Voltessa","model":"Terra GT","trim":"Summit","event_timestamp":"2026-06-25T14:32:07.000Z","ingest_timestamp":"2026-06-25T14:32:07.388Z","message_seq":991045,"sampling_rate_hz":1,"trip_id":"d7b2e4a9-3c61-4f02-9a7d-1e8f5c0b4321","battery":{"pack_soc_pct":68.1,"pack_soh_pct":97.5,"pack_voltage_v":402.3,"pack_current_a":-188.7,"pack_temp_min_c":19.4,"pack_temp_max_c":26.1,"cell_voltage_min_v":3.69,"cell_voltage_max_v":3.77,"cell_imbalance_mv":18,"module_temps_c":[20.1,21.4,22.0,23.8,24.2,25.1,25.9,26.1],"energy_remaining_kwh":92.6,"usable_capacity_kwh":135.0,"est_range_km":401,"charge_rate_kw":0.0,"charge_port_state":"UNPLUGGED","charge_limit_pct":85,"cumulative_charge_energy_kwh":7820.4,"cumulative_discharge_energy_kwh":7510.9,"dc_fast_charge_count":98,"ac_charge_count":312,"contactor_state":"CLOSED","isolation_resistance_kohm":1450},"drivetrain":{"vehicle_speed_kmh":48.0,"motor_rpm":{"front_left":3210,"front_right":3205,"rear_left":3450,"rear_right":3448},"motor_torque_nm":{"front_left":180,"front_right":182,"rear_left":240,"rear_right":238},"motor_temp_c":{"front_left":52,"front_right":53,"rear_left":61,"rear_right":60},"inverter_temp_c":{"front_left":44,"front_right":45,"rear_left":50,"rear_right":49},"total_power_output_kw":104.2,"regen_power_kw":0.0,"regen_level":"HIGH","drive_mode":"ALL_PURPOSE","terrain_mode":"AUTO","gear_position":"D","torque_vectoring_active":true},"dynamics":{"accel_pedal_pos_pct":34.0,"brake_pedal_pos_pct":0.0,"steering_angle_deg":2.7,"yaw_rate_dps":0.8,"pitch_deg":1.4,"roll_deg":-0.6,"lateral_accel_ms2":0.2,"longitudinal_accel_ms2":1.1,"vertical_accel_ms2":9.85,"tire_pressure_kpa":{"fl":262,"fr":264,"rl":268,"rr":266},"tire_temp_c":{"fl":33,"fr":34,"rl":32,"rr":33},"abs_active":false,"traction_control_active":false,"stability_control_active":false,"hill_descent_control":false,"odometer_km":21044.3},"air_suspension":{"ride_height_mode":"STANDARD","corner_height_mm":{"fl":205,"fr":206,"rl":210,"rr":209},"target_height_mm":205,"compressor_active":false,"reservoir_pressure_kpa":1380,"damper_force_n":{"fl":820,"fr":815,"rl":910,"rr":905},"axle_articulation_deg":3.2,"kneel_mode_active":false},"offroad":{"water_fording_depth_mm":0,"wade_mode_active":false,"underbody_clearance_mm":355,"front_camera_view_active":false,"diff_lock_front":false,"diff_lock_rear":false,"approach_angle_deg":34.0,"departure_angle_deg":29.5,"breakover_angle_deg":25.7,"incline_deg":1.4,"gauge_pressure_offroad":true},"location":{"gps_latitude":40.0150,"gps_longitude":-105.2705,"gps_altitude_m":1655,"gps_heading_deg":118,"gps_speed_kmh":47.6,"hdop":0.7,"satellites_used":14,"trip_distance_km":8.3,"elevation_gain_m":142},"adas":{"driver_plus_state":"AVAILABLE","highway_assist_active":false,"set_speed_kmh":0,"follow_distance_setting":2,"lane_keep_active":false,"lane_departure_warning":false,"forward_collision_warning":false,"auto_emergency_brake_event":false,"blind_spot_left":false,"blind_spot_right":false,"detected_objects_count":3,"camera_obstruction":false,"radar_blocked":false,"disengagement_reason":null},"thermal":{"cabin_temp_c":20.8,"cabin_setpoint_c":21.0,"outside_temp_c":9.5,"hvac_power_kw":1.8,"heat_pump_state":"HEATING","battery_coolant_temp_c":24,"battery_heater_active":false,"cabin_preconditioning":false,"defrost_active":false,"pet_comfort_mode":false},"body":{"door_state":{"fl":"CLOSED","fr":"CLOSED","rl":"CLOSED","rr":"CLOSED"},"frunk_state":"CLOSED","tailgate_state":"CLOSED","gear_tunnel_state":"CLOSED","tonneau_state":"CLOSED","window_pos_pct":{"fl":0,"fr":0,"rl":0,"rr":0},"lock_state":"LOCKED","occupancy_seat":{"driver":true,"front_passenger":true,"rear_left":false,"rear_center":false,"rear_right":false},"seatbelt":{"driver":true,"front_passenger":true,"rear_left":false,"rear_center":false,"rear_right":false},"gear_guard_active":true,"alarm_triggered":false},"accessory_power":{"bed_outlet_120v_active":true,"bed_outlet_120v_draw_w":340,"cabin_outlet_active":false,"air_compressor_active":false,"air_compressor_pressure_kpa":0,"camp_mode_active":false,"max_accessory_draw_w":3000},"system":{"firmware_version":"2026.18.2","ota_update_state":"IDLE","cellular_signal_dbm":-82,"cellular_network":"LTE","wifi_connected":false,"gateway_temp_c":48,"low_voltage_battery_v":13.3,"dtc_codes":[],"fault_flags":"0x0000","compute_temp_c":55,"adas_compute_temp_c":61}};
+let DATA = {"vehicle_id":"VLTTGAAA1PN012945","make":"Voltessa","model":"Terra GT","trim":"Summit","event_timestamp":"2026-06-25T14:32:07.000Z","ingest_timestamp":"2026-06-25T14:32:07.388Z","message_seq":991045,"sampling_rate_hz":1,"trip_id":"d7b2e4a9-3c61-4f02-9a7d-1e8f5c0b4321","battery":{"pack_soc_pct":68.1,"pack_soh_pct":97.5,"pack_voltage_v":402.3,"pack_current_a":-188.7,"pack_temp_min_c":19.4,"pack_temp_max_c":26.1,"cell_voltage_min_v":3.69,"cell_voltage_max_v":3.77,"cell_imbalance_mv":18,"module_temps_c":[20.1,21.4,22.0,23.8,24.2,25.1,25.9,26.1],"energy_remaining_kwh":92.6,"usable_capacity_kwh":135.0,"est_range_km":401,"charge_rate_kw":0.0,"charge_port_state":"UNPLUGGED","charge_limit_pct":85,"cumulative_charge_energy_kwh":7820.4,"cumulative_discharge_energy_kwh":7510.9,"dc_fast_charge_count":98,"ac_charge_count":312,"contactor_state":"CLOSED","isolation_resistance_kohm":1450},"drivetrain":{"vehicle_speed_kmh":48.0,"motor_rpm":{"front_left":3210,"front_right":3205,"rear_left":3450,"rear_right":3448},"motor_torque_nm":{"front_left":180,"front_right":182,"rear_left":240,"rear_right":238},"motor_temp_c":{"front_left":52,"front_right":53,"rear_left":61,"rear_right":60},"inverter_temp_c":{"front_left":44,"front_right":45,"rear_left":50,"rear_right":49},"total_power_output_kw":104.2,"regen_power_kw":0.0,"regen_level":"HIGH","drive_mode":"ALL_PURPOSE","terrain_mode":"AUTO","gear_position":"D","torque_vectoring_active":true},"dynamics":{"accel_pedal_pos_pct":34.0,"brake_pedal_pos_pct":0.0,"steering_angle_deg":2.7,"yaw_rate_dps":0.8,"pitch_deg":1.4,"roll_deg":-0.6,"lateral_accel_ms2":0.2,"longitudinal_accel_ms2":1.1,"vertical_accel_ms2":9.85,"tire_pressure_kpa":{"fl":262,"fr":264,"rl":268,"rr":266},"tire_temp_c":{"fl":33,"fr":34,"rl":32,"rr":33},"abs_active":false,"traction_control_active":false,"stability_control_active":false,"hill_descent_control":false,"odometer_km":21044.3},"air_suspension":{"ride_height_mode":"STANDARD","corner_height_mm":{"fl":205,"fr":206,"rl":210,"rr":209},"target_height_mm":205,"compressor_active":false,"reservoir_pressure_kpa":1380,"damper_force_n":{"fl":820,"fr":815,"rl":910,"rr":905},"axle_articulation_deg":3.2,"kneel_mode_active":false},"offroad":{"water_fording_depth_mm":0,"wade_mode_active":false,"underbody_clearance_mm":355,"front_camera_view_active":false,"diff_lock_front":false,"diff_lock_rear":false,"approach_angle_deg":34.0,"departure_angle_deg":29.5,"breakover_angle_deg":25.7,"incline_deg":1.4,"gauge_pressure_offroad":true},"location":{"gps_latitude":40.0150,"gps_longitude":-105.2705,"gps_altitude_m":1655,"gps_heading_deg":118,"gps_speed_kmh":47.6,"hdop":0.7,"satellites_used":14,"trip_distance_km":8.3,"elevation_gain_m":142},"adas":{"driver_plus_state":"AVAILABLE","highway_assist_active":false,"set_speed_kmh":0,"follow_distance_setting":2,"lane_keep_active":false,"lane_departure_warning":false,"forward_collision_warning":false,"auto_emergency_brake_event":false,"blind_spot_left":false,"blind_spot_right":false,"detected_objects_count":3,"camera_obstruction":false,"radar_blocked":false,"disengagement_reason":null},"thermal":{"cabin_temp_c":20.8,"cabin_setpoint_c":21.0,"outside_temp_c":9.5,"hvac_power_kw":1.8,"heat_pump_state":"HEATING","battery_coolant_temp_c":24,"battery_heater_active":false,"cabin_preconditioning":false,"defrost_active":false,"pet_comfort_mode":false},"body":{"door_state":{"fl":"CLOSED","fr":"CLOSED","rl":"CLOSED","rr":"CLOSED"},"frunk_state":"CLOSED","tailgate_state":"CLOSED","gear_tunnel_state":"CLOSED","tonneau_state":"CLOSED","window_pos_pct":{"fl":0,"fr":0,"rl":0,"rr":0},"lock_state":"LOCKED","occupancy_seat":{"driver":true,"front_passenger":true,"rear_left":false,"rear_center":false,"rear_right":false},"seatbelt":{"driver":true,"front_passenger":true,"rear_left":false,"rear_center":false,"rear_right":false},"gear_guard_active":true,"alarm_triggered":false},"accessory_power":{"bed_outlet_120v_active":true,"bed_outlet_120v_draw_w":340,"cabin_outlet_active":false,"air_compressor_active":false,"air_compressor_pressure_kpa":0,"camp_mode_active":false,"max_accessory_draw_w":3000},"system":{"firmware_version":"2026.18.2","ota_update_state":"IDLE","cellular_signal_dbm":-82,"cellular_network":"LTE","wifi_connected":false,"gateway_temp_c":48,"low_voltage_battery_v":13.3,"dtc_codes":[],"fault_flags":"0x0000","compute_temp_c":55,"adas_compute_temp_c":61}};
 
 /* ---- helpers ---- */
 /* fictive manufacturer + model lineup; pick one per session for variety */
@@ -284,7 +301,7 @@ function boolBadge(key,v){
 let activeTab=null;
 
 /* ===================== Live A → B navigation (real maps: Leaflet + OSRM) ===================== */
-const NAV={
+let NAV={
   map:null, routeLayer:null, travelLayer:null, marker:null, aMarker:null, bMarker:null,
   city:{name:"Stockholm", lat:59.3293, lon:18.0686},
   A:null, B:null, timeline:null, setMode:null,
@@ -298,12 +315,52 @@ const NAV={
 /* battery model: distance-based drain, demo-friendly so a charge stop is observable */
 const BATT={usableKwh:135.0, pctPerKm:1.35, elevPctPerM:0.02, kmPerPct:4.5};
 /* immutable baseline used to compute realistic drift over the trip */
-const BASE={odo:DATA.dynamics.odometer_km, soc:DATA.battery.pack_soc_pct, seq:DATA.message_seq};
+let BASE={odo:DATA.dynamics.odometer_km, soc:DATA.battery.pack_soc_pct, seq:DATA.message_seq};
 /* ensure a navigation domain exists so its tab is always present */
 DATA.navigation={session_id:null,city:NAV.city.name,instruction:"Idle",maneuver_type:"",road_name:"",
   distance_to_turn_m:0,distance_remaining_m:0,distance_travelled_m:0,route_distance_m:0,route_duration_s:0,
   eta_s:0,progress_pct:0,step_index:0,total_steps:0,sim_speed_x:NAV.simSpeed,turn_signal:"off",speed_limit_kmh:0,over_limit:false};
 DATA.weather={condition:"—",temp_c:null,feels_c:null,humidity_pct:null,precip_mm:null,wind_kmh:null,code:null,updated:null};
+
+/* ---- fleet: many vehicles share one map; NAV/DATA/BASE are rebound to each in turn ---- */
+const DATA_BASE=JSON.parse(JSON.stringify(DATA));   // pristine template for cloning new vehicles
+const VEH_COLORS=["#4a8cff","#30d158","#ff9f0a","#bf5af2","#ff453a","#64d2ff","#ffd60a","#ac8e68","#5e5ce6","#ff6482"];
+const FLEETSIM={vehicles:[], focus:0, running:false, simSpeed:8, emitMs:5000,
+  raf:null, timer:null, wxTimer:null, wx:null, city:{name:"Stockholm", lat:59.3293, lon:18.0686}};
+function _uuid(){return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&0x3|0x8)).toString(16);});}
+function _vin(){let s="VLT";for(let i=0;i<14;i++)s+="0123456789ABCDEFGHJKLMNPRSTUVWXYZ"[Math.random()*33|0];return s;}
+function assignIdentity(v,i){
+  const m=FLEET.models[i%FLEET.models.length];
+  v.short="V"+String(i+1).padStart(2,"0");
+  v.color=VEH_COLORS[i%VEH_COLORS.length];
+  v.data.vehicle_id=_vin();
+  v.data.make=FLEET.make;v.data.model=m.model;v.data.trim=m.trim;
+  v.data.trip_id=_uuid();
+  v.data.dynamics.odometer_km=+(8000+Math.random()*40000).toFixed(1);
+  v.base.odo=v.data.dynamics.odometer_km;
+  v.base.soc=v.data.battery.pack_soc_pct;
+  v.base.seq=v.data.message_seq;
+}
+function makeVehicle(i){
+  const data=JSON.parse(JSON.stringify(DATA_BASE));
+  const nav={map:(FLEETSIM.vehicles[0]?FLEETSIM.vehicles[0].nav.map:null),
+    routeLayer:null,travelLayer:null,marker:null,aMarker:null,bMarker:null,
+    city:Object.assign({},FLEETSIM.city), A:null,B:null,timeline:null,setMode:null,
+    running:false,tripT:0,seq:0,posts:0,session:null,startWall:0,
+    simSpeed:FLEETSIM.simSpeed, emitMs:FLEETSIM.emitMs, ingestOK:true, wx:null,
+    soc:null,lastDist:0,_lastGain:0,phase:"idle",finalB:null,
+    socLow:15,chargeTarget:85,charger:null,chargeMarker:null,
+    diverting:false,chargeUnavailable:false,chargeStart:0,chargeFrom:0,chargeDurMs:0};
+  const v={nav,data,base:{odo:0,soc:0,seq:data.message_seq},short:"V"+String(i+1).padStart(2,"0"),color:VEH_COLORS[i%VEH_COLORS.length]};
+  assignIdentity(v,i);
+  return v;
+}
+/* vehicle 0 is the existing NAV/DATA/BASE so all the load-time setup applies to it */
+FLEETSIM.vehicles=[{nav:NAV,data:DATA,base:BASE,short:"V01",color:VEH_COLORS[0]}];
+assignIdentity(FLEETSIM.vehicles[0],0);
+function focusV(){return FLEETSIM.vehicles[FLEETSIM.focus]||FLEETSIM.vehicles[0];}
+function bind(v){NAV=v.nav;DATA=v.data;BASE=v.base;}
+function isFocusedNav(){return NAV===focusV().nav;}
 
 /* ---- small live variation so the dashboard looks alive (jitter around a fixed baseline; no drift) ---- */
 /* [dot-path, amplitude (±), decimals]. Authoritative/derived fields (SOC, GPS, weather, nav, speeds) are excluded. */
@@ -353,6 +410,7 @@ function refreshCards(){
 function liveTick(){
   nudgeTelemetry();
   if(activeTab==="overview")renderOverview();else refreshCards();
+  if(activeTab==="location")updateFleetList();
 }
 
 const D2R=Math.PI/180, R2D=180/Math.PI;
@@ -367,49 +425,107 @@ function randNear(lat,lon,rM){const r=rM*Math.sqrt(Math.random()),a=Math.random(
 function fmtKm(m){return m>=1000?(m/1000).toFixed(1)+" km":Math.round(m)+" m";}
 function fmtDur(s){const m=Math.round(s/60);return m>=60?Math.floor(m/60)+" h "+(m%60)+" min":m+" min";}
 function hasLeaflet(){return typeof window.L!=="undefined";}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function setStatus(t){const e=document.getElementById("navStatus");if(e)e.textContent=t;}
 
 /* ---- panel markup for the Location tab ---- */
 function renderLocationPanel(){
   if(!hasLeaflet()) return svgMap(); // offline fallback (double-click, no network)
-  const ready=NAV.timeline?`Route ready • ${fmtKm(NAV.timeline.totalDist)} • ${fmtDur(NAV.timeline.totalDur)} • press ▶ Start`
-    :"Pick a city → Random A→B, or toggle Set A / Set B and click the map.";
   return `
    <div class="nav-controls">
      <div class="nc-row">
-       <input id="cityInput" placeholder="City" value="${NAV.city.name}" onkeydown="if(event.key==='Enter')navGoCity()">
+       <input id="cityInput" placeholder="City" value="${FLEETSIM.city.name}" onkeydown="if(event.key==='Enter')navGoCity()">
        <button class="nc-btn" onclick="navGoCity()">Go</button>
-       <button class="nc-btn" onclick="navRandom()">Random A → B</button>
-       <button class="nc-btn" id="btnA" onclick="navSetMode('A')">Set A</button>
-       <button class="nc-btn" id="btnB" onclick="navSetMode('B')">Set B</button>
-       <select id="simSel" onchange="NAV.simSpeed=+this.value;DATA.navigation.sim_speed_x=NAV.simSpeed">
+       <label style="color:var(--muted);font-size:12px">Vehicles</label>
+       <select id="fleetCount">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}"${n===FLEETSIM.vehicles.length?" selected":""}>${n}</option>`).join("")}</select>
+       <button class="nc-btn" id="btnRandom" onclick="prepareFleet()">Random routes</button>
+       <select id="simSel" onchange="setSimSpeed(+this.value)">
          <option value="1">1×</option><option value="4">4×</option>
          <option value="8" selected>8×</option><option value="20">20×</option>
        </select>
-       <button class="nc-btn start" id="btnStart" onclick="navStart()" ${NAV.timeline?"":"disabled"}>▶ Start</button>
-       <button class="nc-btn stop" id="btnStop" onclick="navStop()" ${NAV.running?"":"disabled"}>■ Stop</button>
+       <button class="nc-btn start" id="btnStart" onclick="fleetStart()">▶ Start all</button>
+       <button class="nc-btn stop" id="btnStop" onclick="fleetStop()" disabled>■ Stop all</button>
      </div>
-     <div class="nc-status" id="navStatus">${ready}</div>
+     <div class="nc-status" id="navStatus">Pick a city, choose how many vehicles, then Random routes → Start all.</div>
    </div>
-   <div class="map-wrap" style="height:460px">
-     <div id="leaflet" style="position:absolute;inset:0;z-index:1"></div>
-     <div class="nav-banner" id="navBanner" style="display:none">
-       <div class="nb-blink" id="nbLeft">&#9664;</div>
-       <div class="nb-arrow" id="nbArrow">↑</div>
-       <div class="nb-text"><div class="nb-inst" id="nbInst">—</div><div class="nb-sub" id="nbSub">—</div></div>
-       <div class="nb-blink" id="nbRight">&#9654;</div>
+   <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:stretch">
+     <div class="map-wrap" style="height:480px">
+       <div id="leaflet" style="position:absolute;inset:0;z-index:1"></div>
+       <div class="nav-banner" id="navBanner" style="display:none">
+         <div class="nb-blink" id="nbLeft">&#9664;</div>
+         <div class="nb-arrow" id="nbArrow">↑</div>
+         <div class="nb-text"><div class="nb-inst" id="nbInst">—</div><div class="nb-sub" id="nbSub">—</div></div>
+         <div class="nb-blink" id="nbRight">&#9654;</div>
+       </div>
+       <div class="wx-widget" id="wxWidget" style="display:none">
+         <div class="wx-ico" id="wxIco">·</div>
+         <div><div class="wx-temp" id="wxTemp">—</div><div class="wx-meta" id="wxMeta">—</div></div>
+       </div>
+       <div class="spd-sign" id="spdSign" style="display:none"><span id="spdSignVal">—</span></div>
+       <div class="map-overlay" id="navChips" style="z-index:500"></div>
      </div>
-     <div class="wx-widget" id="wxWidget" style="display:none">
-       <div class="wx-ico" id="wxIco">·</div>
-       <div><div class="wx-temp" id="wxTemp">—</div><div class="wx-meta" id="wxMeta">—</div></div>
-     </div>
-     <div class="spd-sign" id="spdSign" style="display:none"><span id="spdSignVal">—</span></div>
-     <div class="map-overlay" id="navChips" style="z-index:500"></div>
+     <div class="fleet-panel"><div class="fleet-title">Fleet</div><div id="fleetList"></div></div>
    </div>`;
+}
+function setSimSpeed(x){FLEETSIM.simSpeed=x;FLEETSIM.vehicles.forEach(v=>{v.nav.simSpeed=x;v.data.navigation.sim_speed_x=x;});}
+/* build N vehicles and give each a random A→B route in the current city (sequential, gentle on OSRM) */
+async function prepareFleet(){
+  if(!NAV.map)return;
+  fleetStop();
+  const count=Math.max(1,Math.min(10,+(document.getElementById("fleetCount")||{}).value||1));
+  // grow or shrink the fleet to `count`
+  while(FLEETSIM.vehicles.length<count)FLEETSIM.vehicles.push(makeVehicle(FLEETSIM.vehicles.length));
+  if(FLEETSIM.vehicles.length>count)FLEETSIM.vehicles.length=count;
+  if(FLEETSIM.focus>=count)FLEETSIM.focus=0;
+  FLEETSIM.vehicles.forEach((v,i)=>{v.nav.map=NAV.map;v.nav.city=Object.assign({},FLEETSIM.city);v.nav.simSpeed=FLEETSIM.simSpeed;
+    v.nav.timeline=null;v.nav.phase="idle";v.nav.running=false;
+    if(v.nav.marker){NAV.map.removeLayer(v.nav.marker);v.nav.marker=null;}
+    if(v.nav.routeLayer){NAV.map.removeLayer(v.nav.routeLayer);v.nav.routeLayer=null;}
+    if(v.nav.travelLayer){NAV.map.removeLayer(v.nav.travelLayer);v.nav.travelLayer=null;}
+    if(v.nav.chargeMarker){NAV.map.removeLayer(v.nav.chargeMarker);v.nav.chargeMarker=null;}});
+  for(let i=0;i<FLEETSIM.vehicles.length;i++){
+    const v=FLEETSIM.vehicles[i];bind(v);
+    setStatus(`Routing ${v.short} (${i+1}/${FLEETSIM.vehicles.length})…`);
+    await navRandom();
+    if(!v.nav.timeline){await sleep(900);bind(v);await navRandom();}   // retry once if the routing API throttled us
+    await sleep(450);                                                  // stagger to respect public OSRM limits
+  }
+  bind(focusV());drawFleet();updateFleetList();
+  const ready=FLEETSIM.vehicles.filter(v=>v.nav.timeline).length;
+  setStatus(`${ready}/${FLEETSIM.vehicles.length} routes ready • press ▶ Start all`);
+}
+function updateFleetControls(){
+  const sb=document.getElementById("btnStart"),tb=document.getElementById("btnStop");
+  if(sb)sb.disabled=FLEETSIM.running;if(tb)tb.disabled=!FLEETSIM.running;
+}
+function phaseLabel(n){return n.phase==="charging"?"⚡ charging":n.phase==="toCharger"?"→ charger":n.running?"driving":(n.phase==="arrived"?"arrived":"idle");}
+function focusVehicle(i){
+  FLEETSIM.focus=Math.max(0,Math.min(FLEETSIM.vehicles.length-1,i));
+  bind(focusV());
+  if(activeTab==="location"){initNav();}      // rebuild map visuals around the new focus
+  else selectTab(activeTab);                   // refresh the detailed dashboard
+  renderHeader();updateFleetList();
+}
+function updateFleetList(){
+  const el=document.getElementById("fleetList");if(!el)return;
+  el.innerHTML=FLEETSIM.vehicles.map((v,i)=>{
+    const soc=v.data.battery.pack_soc_pct,spd=Math.round(v.data.location.gps_speed_kmh||0);
+    const foc=i===FLEETSIM.focus;
+    return `<div class="fleet-row${foc?' on':''}" onclick="focusVehicle(${i})">
+      <span class="fl-dot" style="background:${v.color}"></span>
+      <span class="fl-id">${v.short}</span>
+      <span class="fl-soc">${soc.toFixed(0)}%</span>
+      <span class="fl-spd">${spd} km/h</span>
+      <span class="fl-phase">${phaseLabel(v.nav)}</span></div>`;
+  }).join("");
 }
 
 /* ---- map init ---- */
-function vehIcon(head){return L.divIcon({className:"",html:`<div class="veh" style="transform:rotate(${head||0}deg)"></div>`,iconSize:[18,22],iconAnchor:[9,14]});}
+function vehIcon(head,color,focused){
+  color=color||"#4a8cff";
+  const glow=focused?`filter:drop-shadow(0 0 9px ${color})`:"opacity:.85";
+  return L.divIcon({className:"",html:`<div class="veh" style="transform:rotate(${head||0}deg);border-bottom-color:${color};${glow}"></div>`,iconSize:[18,22],iconAnchor:[9,14]});
+}
 function placePin(which,pt){
   const cls=which==="A"?"ab-a":"ab-b";
   const icon=L.divIcon({className:"",html:`<div class="ab-pin ${cls}"><span>${which}</span></div>`,iconSize:[26,26],iconAnchor:[13,26]});
@@ -418,10 +534,11 @@ function placePin(which,pt){
 }
 function initNav(){
   if(!hasLeaflet())return;
+  bind(focusV());
   if(NAV.map){try{NAV.map.remove();}catch(e){}}
   NAV.map=null;NAV.routeLayer=NAV.travelLayer=NAV.marker=NAV.aMarker=NAV.bMarker=null;
   const el=document.getElementById("leaflet");if(!el)return;
-  NAV.map=L.map(el,{zoomControl:false,attributionControl:true}).setView([NAV.city.lat,NAV.city.lon],13);
+  NAV.map=L.map(el,{zoomControl:false,attributionControl:true}).setView([FLEETSIM.city.lat,FLEETSIM.city.lon],13);
   NAV.map.attributionControl.setPrefix('Leaflet'); // drop the default flag graphic
   L.control.zoom({position:"bottomright"}).addTo(NAV.map);
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
@@ -441,8 +558,24 @@ function initNav(){
     if(NAV.A&&NAV.B)navRoute(); else setStatus("");
   });
   setTimeout(()=>{if(NAV.map)NAV.map.invalidateSize();},120);
+  // share this map with every vehicle and (re)draw all their markers
+  FLEETSIM.vehicles.forEach(v=>{v.nav.map=NAV.map;v.nav.marker=null;v.nav.travelLayer=null;v.nav.routeLayer=null;v.nav.chargeMarker=null;});
+  drawFleet();
   renderWeather();                                   // show cached weather if we have it
   fetchWeather(NAV.city.lat,NAV.city.lon);           // live weather for the current city
+}
+/* (re)draw markers for every vehicle + the focused vehicle's route line on the shared map */
+function drawFleet(){
+  const F=focusV();
+  FLEETSIM.vehicles.forEach(v=>{
+    if(!v.nav.map)return;
+    const loc=v.data.location;
+    if(loc&&typeof loc.gps_latitude==="number"&&(v.nav.running||v.nav.timeline)){
+      bind(v);ensureMarker(loc.gps_latitude,loc.gps_longitude,loc.gps_heading_deg||0);
+    }
+  });
+  bind(F);
+  if(NAV.timeline){drawRoute();if(NAV.A)placePin("A",NAV.A);if(NAV.B)placePin("B",NAV.B);}
 }
 function updateModeBtns(){const a=document.getElementById("btnA"),b=document.getElementById("btnB");
   if(a)a.classList.toggle("on",NAV.setMode==="A");if(b)b.classList.toggle("on",NAV.setMode==="B");}
@@ -458,12 +591,9 @@ async function navGoCity(){
     let j=await r.json();
     if(!j.length){r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(name)}`);j=await r.json();}
     if(!j.length){setStatus("City not found: "+name);return;}
-    NAV.city={name,lat:+j[0].lat,lon:+j[0].lon};DATA.navigation.city=name;
-    NAV.A=NAV.B=NAV.timeline=null;
-    ["aMarker","bMarker","routeLayer","travelLayer"].forEach(k=>{if(NAV[k]){NAV.map.removeLayer(NAV[k]);NAV[k]=null;}});
-    NAV.map.setView([NAV.city.lat,NAV.city.lon],13);
-    const sb=document.getElementById("btnStart");if(sb)sb.disabled=true;
-    navRandom();
+    FLEETSIM.city={name,lat:+j[0].lat,lon:+j[0].lon};
+    if(NAV.map)NAV.map.setView([FLEETSIM.city.lat,FLEETSIM.city.lon],13);
+    prepareFleet();
   }catch(e){setStatus("Lookup failed — check the connection.");}
 }
 /* snap any coordinate to the nearest public road (OSRM driving network => on land, on a road) */
@@ -495,7 +625,7 @@ async function navRandom(){
   let B=await pickRoadPoint(),tries=0;
   while(tries++<8 && haversine([NAV.A.lat,NAV.A.lon],[B.lat,B.lon])<800) B=await pickRoadPoint();
   NAV.B=B;
-  placePin("A",NAV.A);placePin("B",NAV.B);
+  if(isFocusedNav()){placePin("A",NAV.A);placePin("B",NAV.B);}
   await navRoute();
 }
 async function navRoute(){
@@ -505,11 +635,9 @@ async function navRoute(){
   try{
     const r=await fetch(url);const j=await r.json();
     if(j.code!=="Ok"||!j.routes||!j.routes.length){setStatus("No route found — try Random A→B again.");return;}
-    buildTimeline(j.routes[0]);drawRoute();
-    NAV.map.fitBounds(NAV.routeLayer.getBounds(),{padding:[40,40]});
-    const sb=document.getElementById("btnStart");if(sb)sb.disabled=false;
-    setStatus(`Route ready • ${fmtKm(NAV.timeline.totalDist)} • ${fmtDur(NAV.timeline.totalDur)} • press ▶ Start`);
-    fetchWeather(NAV.A.lat,NAV.A.lon); // weather at the start of the route
+    buildTimeline(j.routes[0]);
+    if(isFocusedNav()){drawRoute();try{NAV.map.fitBounds(NAV.routeLayer.getBounds(),{padding:[40,40]});}catch(e){}
+      setStatus(`${(vehicleOf(NAV)||focusV()).short} route ready • ${fmtKm(NAV.timeline.totalDist)} • ${fmtDur(NAV.timeline.totalDur)}`);}
     fetchElevations();                 // real terrain elevation along the route
   }catch(e){setStatus("Routing failed — check the connection.");}
 }
@@ -556,7 +684,7 @@ function buildTimeline(route){
 }
 /* ---- real terrain elevation along the route (Open-Meteo, no API key) ---- */
 async function fetchElevations(){
-  const tl=NAV.timeline;if(!tl)return;
+  const v=vehicleOf(NAV)||focusV();const tl=NAV.timeline;if(!tl)return;
   const coords=tl.coords,cum=tl.cum,n=coords.length;if(!n)return;
   const N=Math.min(n,100);                                   // API allows up to 100 points per call
   const idx=[];for(let i=0;i<N;i++)idx.push(Math.round(i*(n-1)/((N-1)||1)));
@@ -568,7 +696,8 @@ async function fetchElevations(){
     const j=await r.json();
     if(!j||!j.elevation||!j.elevation.length)return;
     tl.elev=uniq.map((ci,k)=>({d:cum[ci],e:j.elevation[k]})); // {distance, elevation} sorted by distance
-    if(NAV.timeline===tl){applyState(stateAtTime(NAV.tripT));if(activeTab==="location")liveCards();} // refresh altitude now
+    bind(v);
+    if(isFocusedNav()&&NAV.timeline===tl&&NAV.running){computeState(stateAtTime(NAV.tripT));if(activeTab==="location")liveCards();} // refresh altitude now
   }catch(e){}
 }
 function elevAtDist(d){
@@ -682,10 +811,22 @@ function renderWeather(){
   document.getElementById("wxTemp").textContent=`${Math.round(w.temp_c)}°C`;
   document.getElementById("wxMeta").textContent=`${w.condition} • 💧${Math.round(w.humidity_pct)}% • 💨${Math.round(w.wind_kmh)} km/h`;
 }
-function weatherForCurrent(){
-  let lat=NAV.city.lat,lon=NAV.city.lon;
-  if(DATA.location&&DATA.location.gps_latitude){lat=DATA.location.gps_latitude;lon=DATA.location.gps_longitude;}
-  fetchWeather(lat,lon);
+function weatherForFleet(){
+  const f=focusV();let lat=FLEETSIM.city.lat,lon=FLEETSIM.city.lon;
+  if(f.data.location&&f.data.location.gps_latitude){lat=f.data.location.gps_latitude;lon=f.data.location.gps_longitude;}
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`)
+    .then(r=>r.json()).then(j=>{
+      if(!j||!j.current)return;
+      const cur=j.current,wi=weatherInfo(cur.weather_code);
+      const wx={temp_c:cur.temperature_2m,feels_c:cur.apparent_temperature,humidity_pct:cur.relative_humidity_2m,
+        precip_mm:cur.precipitation,wind_kmh:cur.wind_speed_10m,code:cur.weather_code,condition:wi[0],icon:wi[1],
+        lat:+(+lat).toFixed(4),lon:+(+lon).toFixed(4),updated:new Date().toISOString()};
+      FLEETSIM.wx=wx;
+      // one fetch, applied to every vehicle's telemetry
+      FLEETSIM.vehicles.forEach(v=>{v.data.weather=Object.assign({},wx);v.nav.wx=wx;
+        if(typeof cur.temperature_2m==="number")v.data.thermal.outside_temp_c=+cur.temperature_2m.toFixed(1);});
+      renderWeather();
+    }).catch(()=>{});
 }
 
 /* ---- simulation: smooth ~60fps visual loop + datapoint emit every 5s ---- */
@@ -693,68 +834,98 @@ function navTripT(){
   if(!NAV.timeline)return 0;
   return Math.min(NAV.timeline.totalDur,((performance.now()-NAV.startWall)/1000)*NAV.simSpeed);
 }
-function navStart(){
-  if(NAV.running||!hasLeaflet())return;
-  if(!NAV.timeline){setStatus("Set a route first (Random A→B).");return;}
+/* ---- per-vehicle trip control (operates on the currently bound NAV/DATA/BASE) ---- */
+function startVehicle(v){
+  bind(v);
+  if(!NAV.timeline)return false;
   const slug=NAV.city.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")||"trip";
   const ts=new Date().toISOString().replace(/[-:T]/g,"").slice(0,14);
-  NAV.session=`${slug}-${ts}`;DATA.navigation.session_id=NAV.session;
-  NAV.tripT=0;NAV.seq=0;NAV.posts=0;NAV.running=true;NAV.ingestOK=true;
-  NAV.startWall=performance.now();
-  // reset trip battery/charging state; seed a low-ish SOC the first time so a charge stop is demonstrable
+  NAV.session=`${v.short}-${slug}-${ts}`;DATA.navigation.session_id=NAV.session;
+  NAV.tripT=0;NAV.seq=0;NAV.posts=0;NAV.running=true;NAV.ingestOK=true;NAV.startWall=performance.now();
   NAV.phase="driving";NAV.lastDist=0;NAV._lastGain=0;NAV.finalB=null;NAV.diverting=false;NAV.chargeUnavailable=false;
-  NAV.socLow=Math.round(10+Math.random()*10);          // trigger somewhere in the 10–20% band
-  // start a little above the threshold so the drain → charge → resume cycle is visible on a typical trip
-  NAV.soc=+(NAV.socLow+3+Math.random()*5).toFixed(1);
-  if(NAV.chargeMarker){NAV.map.removeLayer(NAV.chargeMarker);NAV.chargeMarker=null;}NAV.charger=null;
-  const sb=document.getElementById("btnStart"),tb=document.getElementById("btnStop");
-  if(sb)sb.disabled=true;if(tb)tb.disabled=false;
-  const live=document.querySelector(".live");if(live)live.innerHTML='<span class="dot"></span> DRIVING';
-  emitDatapoint();                                  // first datapoint right away
-  NAV.timer=setInterval(emitDatapoint,NAV.emitMs);  // persist a datapoint every 5s
-  weatherForCurrent();                              // refresh weather at trip start
-  NAV.wxTimer=setInterval(weatherForCurrent,600000); // and every 10 min along the way
-  NAV.raf=requestAnimationFrame(navFrame);          // smooth visual updates
+  NAV.socLow=Math.round(10+Math.random()*10);                 // trigger in the 10–20% band
+  NAV.soc=+(NAV.socLow+3+Math.random()*5).toFixed(1);         // start just above so a charge stop is visible
+  if(NAV.chargeMarker&&NAV.map){NAV.map.removeLayer(NAV.chargeMarker);}NAV.chargeMarker=null;NAV.charger=null;
+  return true;
 }
-function navFrame(){
-  if(!NAV.running)return;
-  if(NAV.phase==="charging"){chargeFrame();NAV.raf=requestAnimationFrame(navFrame);return;}
-  if(NAV.phase==="resuming"){NAV.raf=requestAnimationFrame(navFrame);return;}  // holding while we re-route
-  NAV.tripT=navTripT();
-  applyState(stateAtTime(NAV.tripT));
-  if(activeTab==="location")liveCards();
-  maybeDivert();
-  if(NAV.tripT>=NAV.timeline.totalDur){onLegComplete();if(NAV.running)NAV.raf=requestAnimationFrame(navFrame);return;}
-  NAV.raf=requestAnimationFrame(navFrame);
+function navStop(arrived){   // stop the bound vehicle (one trip finished)
+  NAV.running=false;NAV.phase="arrived";
+  if(isFocusedNav()){
+    const live=document.querySelector(".live");if(live)live.innerHTML='<span class="dot"></span> '+(arrived===true?"ARRIVED":"LIVE");
+    setStatus((arrived===true?"Arrived • ":"Stopped • ")+`${NAV.posts} datapoints${NAV.session?` → telemetry/${NAV.session}.ndjson`:""}`);
+  }
+  if(!FLEETSIM.vehicles.some(x=>x.nav.running))fleetStopTimers();
 }
 function maybeDivert(){
   if(NAV.phase==="driving"&&!NAV.diverting&&!NAV.chargeUnavailable&&NAV.soc<=NAV.socLow){
     NAV.diverting=true;beginDivert().then(()=>{NAV.diverting=false;});
   }
 }
-function emitDatapoint(){
-  if(!NAV.timeline)return;
-  if(NAV.phase==="charging"||NAV.phase==="resuming"){  // log charging datapoints too (vehicle parked)
-    const now=new Date();
-    DATA.event_timestamp=now.toISOString();DATA.ingest_timestamp=now.toISOString();
-    DATA.message_seq=BASE.seq+(++NAV.seq);
-    postDatapoint();return;
-  }
-  NAV.tripT=navTripT();
-  applyState(stateAtTime(NAV.tripT));               // keep datapoints correct even if frames throttle
-  postDatapoint();
-  if(activeTab==="navigation"||activeTab==="overview")selectTab(activeTab);
-  if(NAV.tripT>=NAV.timeline.totalDur)onLegComplete();
+/* ---- fleet engine: one shared rAF + one shared emit interval drive every vehicle ---- */
+function fleetStart(){
+  if(!hasLeaflet())return;
+  const ready=FLEETSIM.vehicles.filter(v=>v.nav.timeline);
+  if(!ready.length){setStatus("No routes yet — press 'Random routes' first.");return;}
+  ready.forEach(startVehicle);
+  bind(focusV());
+  FLEETSIM.running=true;
+  emitAll();                                          // first datapoints right away
+  if(FLEETSIM.timer)clearInterval(FLEETSIM.timer);
+  FLEETSIM.timer=setInterval(emitAll,FLEETSIM.emitMs);
+  weatherForFleet();
+  if(FLEETSIM.wxTimer)clearInterval(FLEETSIM.wxTimer);
+  FLEETSIM.wxTimer=setInterval(weatherForFleet,600000);
+  if(FLEETSIM.raf)cancelAnimationFrame(FLEETSIM.raf);
+  FLEETSIM.raf=requestAnimationFrame(frameAll);
+  updateFleetControls();
 }
-function navStop(arrived){
-  NAV.running=false;
-  if(NAV.timer){clearInterval(NAV.timer);NAV.timer=null;}
-  if(NAV.wxTimer){clearInterval(NAV.wxTimer);NAV.wxTimer=null;}
-  if(NAV.raf){cancelAnimationFrame(NAV.raf);NAV.raf=null;}
-  const sb=document.getElementById("btnStart"),tb=document.getElementById("btnStop");
-  if(sb)sb.disabled=false;if(tb)tb.disabled=true;
-  const live=document.querySelector(".live");if(live)live.innerHTML='<span class="dot"></span> '+(arrived===true?"ARRIVED":"LIVE");
-  setStatus((arrived===true?"Arrived • ":"Stopped • ")+`${NAV.posts} datapoints saved${NAV.session?` → telemetry/${NAV.session}.ndjson`:""}`);
+function fleetStopTimers(){
+  FLEETSIM.running=false;
+  if(FLEETSIM.timer){clearInterval(FLEETSIM.timer);FLEETSIM.timer=null;}
+  if(FLEETSIM.wxTimer){clearInterval(FLEETSIM.wxTimer);FLEETSIM.wxTimer=null;}
+  if(FLEETSIM.raf){cancelAnimationFrame(FLEETSIM.raf);FLEETSIM.raf=null;}
+  updateFleetControls();
+}
+function fleetStop(){
+  FLEETSIM.vehicles.forEach(v=>{v.nav.running=false;v.nav.phase="idle";});
+  fleetStopTimers();
+  bind(focusV());
+  const live=document.querySelector(".live");if(live)live.innerHTML='<span class="dot"></span> LIVE';
+  setStatus("Stopped • fleet idle");
+}
+function frameAll(){
+  if(!FLEETSIM.running)return;
+  for(const v of FLEETSIM.vehicles){
+    if(!v.nav.running)continue;
+    bind(v);
+    if(NAV.phase==="charging"){chargeStep();continue;}
+    if(NAV.phase==="resuming")continue;               // holding while we re-route
+    NAV.tripT=navTripT();
+    computeState(stateAtTime(NAV.tripT));
+    maybeDivert();
+    if(NAV.tripT>=NAV.timeline.totalDur)onLegComplete();
+  }
+  bind(focusV());
+  presentFocused();
+  if(activeTab==="location")liveCards();
+  FLEETSIM.raf=requestAnimationFrame(frameAll);
+}
+function emitAll(){
+  for(const v of FLEETSIM.vehicles){
+    if(!v.nav.running||!v.nav.timeline)continue;
+    bind(v);
+    if(NAV.phase==="charging"||NAV.phase==="resuming"){ // log charging datapoints too (vehicle parked)
+      const now=new Date();DATA.event_timestamp=now.toISOString();DATA.ingest_timestamp=now.toISOString();
+      DATA.message_seq=BASE.seq+(++NAV.seq);postDatapoint();continue;
+    }
+    NAV.tripT=navTripT();
+    computeState(stateAtTime(NAV.tripT));
+    postDatapoint();
+    if(NAV.tripT>=NAV.timeline.totalDur)onLegComplete();
+  }
+  bind(focusV());
+  if(activeTab==="navigation"||activeTab==="overview")selectTab(activeTab);
+  updateFleetList();
 }
 /* ---- battery: state of charge drains with distance; derived telemetry follows ---- */
 function setBatteryDerived(){
@@ -797,31 +968,35 @@ async function findCharger(lat,lon){
   return null;
 }
 async function beginDivert(){
+  const v=vehicleOf(NAV)||focusV();
   const cur={lat:DATA.location.gps_latitude,lon:DATA.location.gps_longitude};
-  setStatus(`⚠ Battery ${NAV.soc.toFixed(0)}% — locating nearest charging station…`);
+  if(isFocusedNav())setStatus(`⚠ ${v.short} battery ${NAV.soc.toFixed(0)}% — locating charging station…`);
   const ch=await findCharger(cur.lat,cur.lon);
-  if(!ch){NAV.chargeUnavailable=true;setStatus(`⚠ No charging station found nearby — continuing on ${NAV.soc.toFixed(0)}%`);return;}
+  bind(v);
+  if(!ch){NAV.chargeUnavailable=true;if(isFocusedNav())setStatus(`⚠ No charging station nearby — continuing on ${NAV.soc.toFixed(0)}%`);return;}
   NAV.charger=ch;NAV.finalB=NAV.finalB||NAV.B;
-  if(NAV.chargeMarker)NAV.map.removeLayer(NAV.chargeMarker);
+  if(NAV.chargeMarker&&NAV.map)NAV.map.removeLayer(NAV.chargeMarker);
   if(NAV.map){
     const icon=L.divIcon({className:"",html:`<div class="ev-pin"><span>⚡</span></div>`,iconSize:[30,30],iconAnchor:[15,30]});
     NAV.chargeMarker=L.marker([ch.lat,ch.lon],{icon,zIndexOffset:900}).addTo(NAV.map);
   }
-  setStatus(`⚠ Battery ${NAV.soc.toFixed(0)}% — diverting to ${ch.name} (${fmtKm(ch.dist)} away)`);
+  if(isFocusedNav())setStatus(`⚠ ${v.short} diverting to ${ch.name} (${fmtKm(ch.dist)})`);
   await reroute(cur,{lat:ch.lat,lon:ch.lon},"toCharger");
 }
 async function reroute(from,to,phase){
+  const v=vehicleOf(NAV)||focusV();
   const url=`https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=full&geometries=geojson&steps=true`;
   try{
     const r=await fetch(url);const j=await r.json();
+    bind(v);
     if(j.code!=="Ok"||!j.routes||!j.routes.length){
       if(phase==="toCharger"){NAV.chargeUnavailable=true;NAV.phase="driving";}
       return;
     }
-    buildTimeline(j.routes[0]);drawRoute();
-    NAV.elevReady=false;fetchElevations();
+    buildTimeline(j.routes[0]);if(isFocusedNav())drawRoute();
+    fetchElevations();
     NAV.tripT=0;NAV.lastDist=0;NAV._lastGain=0;NAV.startWall=performance.now();NAV.phase=phase;
-  }catch(e){if(phase==="toCharger"){NAV.chargeUnavailable=true;NAV.phase="driving";}}
+  }catch(e){bind(v);if(phase==="toCharger"){NAV.chargeUnavailable=true;NAV.phase="driving";}}
 }
 function startCharging(){
   NAV.phase="charging";
@@ -829,10 +1004,10 @@ function startCharging(){
   NAV.chargeFrom=NAV.soc;
   NAV.chargeStart=performance.now();
   NAV.chargeDurMs=Math.max(12000,(NAV.chargeTarget-NAV.soc)*350);// watchable charge time
-  if(NAV.map&&NAV.charger)NAV.map.setView([NAV.charger.lat,NAV.charger.lon],NAV.map.getZoom(),{animate:false});
-  setStatus(`🔌 Charging at ${NAV.charger?NAV.charger.name:"station"} • ${NAV.soc.toFixed(0)}% → ${NAV.chargeTarget}%`);
+  if(isFocusedNav()&&NAV.map&&NAV.charger)NAV.map.setView([NAV.charger.lat,NAV.charger.lon],NAV.map.getZoom(),{animate:false});
+  if(isFocusedNav())setStatus(`🔌 ${(vehicleOf(NAV)||focusV()).short} charging at ${NAV.charger?NAV.charger.name:"station"} • ${NAV.soc.toFixed(0)}% → ${NAV.chargeTarget}%`);
 }
-function chargeFrame(){
+function chargeStep(){   // compute-only; focused presentation handled by renderChargingBanner()
   const frac=Math.min(1,(performance.now()-NAV.chargeStart)/NAV.chargeDurMs);
   NAV.soc=NAV.chargeFrom+(NAV.chargeTarget-NAV.chargeFrom)*frac;
   const rate=+(180*(1-0.55*(NAV.soc/100))).toFixed(1);        // DC fast-charge taper
@@ -844,36 +1019,38 @@ function chargeFrame(){
   setBatteryDerived();
   DATA.navigation.instruction=`Charging at ${NAV.charger?NAV.charger.name:"station"}`;
   DATA.navigation.phase="charging";DATA.navigation.turn_signal="off";
-  const b=document.getElementById("navBanner");
-  if(b){b.style.display="flex";
-    document.getElementById("nbArrow").textContent="🔌";
-    document.getElementById("nbInst").textContent=`Charging • ${NAV.soc.toFixed(0)}%`;
-    document.getElementById("nbSub").textContent=`Target ${NAV.chargeTarget}% • +${rate.toFixed(0)} kW`;
-    const lb=document.getElementById("nbLeft"),rb=document.getElementById("nbRight");
-    if(lb)lb.classList.remove("on");if(rb)rb.classList.remove("on");}
-  const sg=document.getElementById("spdSign");if(sg)sg.style.display="none";
-  setStatus(`🔌 Charging at ${NAV.charger?NAV.charger.name:"station"} • ${NAV.soc.toFixed(0)}% → ${NAV.chargeTarget}%`);
-  if(activeTab==="overview"||activeTab==="navigation")selectTab(activeTab);
+  NAV._chargeRate=rate;
   if(frac>=1)finishCharging();
 }
 async function finishCharging(){
   if(NAV.phase==="resuming")return;                 // guard against re-entry while re-routing
+  const v=vehicleOf(NAV)||focusV();
   NAV.phase="resuming";
   NAV.soc=NAV.chargeTarget;
   DATA.battery.charge_port_state="UNPLUGGED";DATA.battery.charge_rate_kw=0.0;
   DATA.battery.dc_fast_charge_count=(DATA.battery.dc_fast_charge_count||0)+1;
   DATA.drivetrain.gear_position="D";
   setBatteryDerived();
-  setStatus(`✓ Charged to ${NAV.chargeTarget}% — resuming to destination…`);
+  if(isFocusedNav())setStatus(`✓ ${v.short} charged to ${NAV.chargeTarget}% — resuming…`);
   const dest=NAV.finalB||NAV.B;NAV.finalB=null;
   await reroute({lat:NAV.charger.lat,lon:NAV.charger.lon},dest,"driving");
-  postDatapoint();
+  bind(v);postDatapoint();
 }
 function onLegComplete(){
   if(NAV.phase==="toCharger"){startCharging();return;}
   navStop(true);
 }
-function applyState(st){
+function vehicleOf(n){return FLEETSIM.vehicles.find(v=>v.nav===n);}
+function ensureMarker(lat,lon,head){
+  if(!NAV.map)return;
+  const v=vehicleOf(NAV),col=v?v.color:"#4a8cff",foc=isFocusedNav();
+  if(!NAV.marker)NAV.marker=L.marker([lat,lon],{icon:vehIcon(head,col,foc),zIndexOffset:foc?1000:600}).addTo(NAV.map);
+  else NAV.marker.setLatLng([lat,lon]);
+  const mel=NAV.marker.getElement&&NAV.marker.getElement(),veh=mel&&mel.querySelector(".veh");
+  if(veh)veh.style.transform=`rotate(${head||0}deg)`;
+}
+/* compute telemetry + move this vehicle's marker (runs for every vehicle; no map recenter/overlay) */
+function computeState(st){
   const now=new Date();
   DATA.event_timestamp=now.toISOString();DATA.ingest_timestamp=now.toISOString();
   DATA.message_seq=BASE.seq+(++NAV.seq);
@@ -902,17 +1079,31 @@ function applyState(st){
     speed_limit_kmh:Math.round(st.limit||0),over_limit:spd>(st.limit||999),
     phase:NAV.phase,low_battery:NAV.soc<=NAV.socLow,
     charging_station:NAV.charger?NAV.charger.name:null};
-  if(NAV.map){
-    if(!NAV.marker)NAV.marker=L.marker([st.lat,st.lon],{icon:vehIcon(st.head),zIndexOffset:1000}).addTo(NAV.map);
-    else NAV.marker.setLatLng([st.lat,st.lon]);
-    const mel=NAV.marker.getElement&&NAV.marker.getElement(),veh=mel&&mel.querySelector(".veh");
-    if(veh)veh.style.transform=`rotate(${st.head||0}deg)`;
-    if(NAV.running)NAV.map.setView([st.lat,st.lon],NAV.map.getZoom(),{animate:false});
-    const trav=traveledCoords(st.dist);
-    if(NAV.travelLayer)NAV.travelLayer.setLatLngs(trav);
-    else NAV.travelLayer=L.polyline(trav,{color:"#6ec8ff",weight:7,opacity:1,lineJoin:"round",lineCap:"round",className:"travel-glow"}).addTo(NAV.map);
-  }
-  updateNavOverlay(st,inst,sig);
+  ensureMarker(st.lat,st.lon,st.head);
+}
+/* focused-only presentation: recenter map, draw travel trail, update banner/chips/signs */
+function presentFocused(){
+  bind(focusV());
+  if(!NAV.map||!NAV.running)return;
+  if(NAV.phase==="charging"){renderChargingBanner();if(NAV.charger)NAV.map.setView([NAV.charger.lat,NAV.charger.lon],NAV.map.getZoom(),{animate:false});return;}
+  if(NAV.phase==="resuming")return;
+  if(!NAV.timeline)return;
+  const st=stateAtTime(NAV.tripT);
+  NAV.map.setView([st.lat,st.lon],NAV.map.getZoom(),{animate:false});
+  const trav=traveledCoords(st.dist);
+  if(NAV.travelLayer)NAV.travelLayer.setLatLngs(trav);
+  else NAV.travelLayer=L.polyline(trav,{color:"#6ec8ff",weight:7,opacity:1,lineJoin:"round",lineCap:"round",className:"travel-glow"}).addTo(NAV.map);
+  updateNavOverlay(st,maneuverText(st.man,st.name),turnSignal(st));
+}
+function renderChargingBanner(){
+  const b=document.getElementById("navBanner");
+  if(b){b.style.display="flex";
+    document.getElementById("nbArrow").textContent="🔌";
+    document.getElementById("nbInst").textContent=`Charging • ${NAV.soc.toFixed(0)}%`;
+    document.getElementById("nbSub").textContent=`Target ${NAV.chargeTarget}% • +${(NAV._chargeRate||0).toFixed(0)} kW`;
+    const lb=document.getElementById("nbLeft"),rb=document.getElementById("nbRight");
+    if(lb)lb.classList.remove("on");if(rb)rb.classList.remove("on");}
+  const sg=document.getElementById("spdSign");if(sg)sg.style.display="none";
 }
 function updateNavOverlay(st,inst,sig){
   const b=document.getElementById("navBanner");
@@ -940,11 +1131,12 @@ function liveCards(){
 }
 function postDatapoint(){
   nudgeTelemetry();                                 // fresh small variation in every emitted datapoint
+  const v=vehicleOf(NAV)||focusV();
   const dp=JSON.parse(JSON.stringify(DATA));
   fetch("/ingest",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(dp)})
-    .then(r=>r.json()).then(j=>{if(j&&j.ok){NAV.posts=j.count;
-      if(NAV.running)setStatus(`Driving • ${NAV.posts} datapoints → telemetry/${j.file} • ETA ${fmtDur(DATA.navigation.eta_s)}`);}})
-    .catch(()=>{if(NAV.ingestOK){NAV.ingestOK=false;
+    .then(r=>r.json()).then(j=>{if(j&&j.ok){v.nav.posts=j.count;
+      if(v===focusV()&&v.nav.running)setStatus(`${v.short} driving • ${v.nav.posts} pts → ${j.file} • ETA ${fmtDur(dp.navigation.eta_s)}`);}})
+    .catch(()=>{if(v.nav.ingestOK){v.nav.ingestOK=false;
       setStatus("⚠ Datapoints can't be saved — open via the server (docker compose up → http://localhost:8080).");}});
 }
 
@@ -1022,8 +1214,9 @@ function countLeaves(v){
 }
 function renderTabs(){
   const nav=document.getElementById("tabs");
-  const ds=["overview",...domains()];
+  const ds=["overview",...domains(),"settings"];
   nav.innerHTML=ds.map(d=>{
+    if(d==="settings")return `<div class="tab" data-tab="settings"><span>⚙ Settings</span></div>`;
     const cnt = d==="overview" ? domains().reduce((a,k)=>a+countLeaves(DATA[k]),0) : countLeaves(DATA[d]);
     return `<div class="tab" data-tab="${d}"><span>${d==="overview"?"Overview":pretty(d)}</span><span class="count">${cnt}</span></div>`;
   }).join("");
@@ -1032,7 +1225,74 @@ function renderTabs(){
 function selectTab(tab){
   activeTab=tab;
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
-  tab==="overview"?renderOverview():renderDomain(tab);
+  if(tab==="overview")renderOverview();
+  else if(tab==="settings")renderSettings();
+  else renderDomain(tab);
+}
+/* ---- settings (Kafka + send interval), persisted on the server ---- */
+function sv(id){const e=document.getElementById(id);return e?e.value:"";}
+function _setVal(id,v){const e=document.getElementById(id);if(e!=null&&v!=null)e.value=v;}
+function renderSettings(){
+  const m=document.getElementById("main");
+  m.innerHTML=`<div class="panel-title"><h2>Settings</h2><span class="hint">Kafka broker + telemetry send interval • saved on the server</span></div>
+  <div class="settings-form">
+    <div class="fld"><label>Broker (host:port)</label><input id="setBroker" placeholder="orvill.ddns.net:9092"></div>
+    <div class="fld"><label>Topic</label><input id="setTopic" placeholder="connectedCar1"></div>
+    <div class="settings-row">
+      <div class="fld" style="flex:1"><label>Security protocol</label>
+        <select id="setProto"><option>PLAINTEXT</option><option>SASL_PLAINTEXT</option><option>SASL_SSL</option><option>SSL</option></select></div>
+      <div class="fld" style="flex:1"><label>SASL mechanism</label>
+        <select id="setMech"><option>PLAIN</option><option>SCRAM-SHA-256</option><option>SCRAM-SHA-512</option></select></div>
+    </div>
+    <div class="settings-row">
+      <div class="fld" style="flex:1"><label>SASL username</label><input id="setUser"></div>
+      <div class="fld" style="flex:1"><label>SASL password</label><input id="setPass" type="password" placeholder="unchanged"></div>
+    </div>
+    <div class="settings-row">
+      <div class="fld"><label>Send interval (seconds)</label><input id="setInterval" type="number" min="1" value="5" style="width:130px"></div>
+      <div class="fld"><label>Kafka enabled</label><select id="setEnabled"><option value="true">Yes</option><option value="false">No</option></select></div>
+    </div>
+    <div class="settings-row">
+      <button class="nc-btn start" onclick="saveSettings()">Save</button>
+      <button class="nc-btn" onclick="testKafka()">Test connection</button>
+    </div>
+    <div class="settings-result" id="setResult"></div>
+  </div>`;
+  loadSettings();
+}
+async function loadSettings(){
+  try{const r=await fetch("/config");const s=await r.json();
+    _setVal("setBroker",s.broker);_setVal("setTopic",s.topic);_setVal("setProto",s.security_protocol);
+    _setVal("setMech",s.sasl_mechanism);_setVal("setUser",s.sasl_username);_setVal("setInterval",s.emit_interval_s);
+    _setVal("setEnabled",String(!!s.enabled));
+    const p=document.getElementById("setPass");if(p)p.placeholder=s.password_set?"•••••• (unchanged)":"(none set)";
+  }catch(e){const el=document.getElementById("setResult");if(el){el.className="settings-result err";el.textContent="Could not load settings.";}}
+}
+function settingsPayload(){
+  const pass=(document.getElementById("setPass")||{}).value||"";
+  const p={broker:sv("setBroker"),topic:sv("setTopic"),security_protocol:sv("setProto"),
+    sasl_mechanism:sv("setMech"),sasl_username:sv("setUser"),
+    emit_interval_s:+sv("setInterval")||5,enabled:sv("setEnabled")==="true"};
+  if(pass)p.sasl_password=pass;
+  return p;
+}
+async function saveSettings(){
+  const el=document.getElementById("setResult");el.className="settings-result";el.textContent="Saving…";
+  try{const r=await fetch("/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(settingsPayload())});
+    const s=await r.json();
+    FLEETSIM.emitMs=Math.max(1000,(s.emit_interval_s||5)*1000);
+    if(FLEETSIM.timer){clearInterval(FLEETSIM.timer);FLEETSIM.timer=setInterval(emitAll,FLEETSIM.emitMs);}
+    el.className="settings-result ok";el.textContent=`Saved • interval ${s.emit_interval_s}s • topic ${s.topic}`;
+    const p=document.getElementById("setPass");if(p){p.value="";p.placeholder=s.password_set?"•••••• (unchanged)":"(none set)";}
+  }catch(e){el.className="settings-result err";el.textContent="Save failed.";}
+}
+async function testKafka(){
+  const el=document.getElementById("setResult");el.className="settings-result";el.textContent="Testing connection…";
+  try{const r=await fetch("/kafka/test",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(settingsPayload())});
+    const s=await r.json();
+    if(s.ok){el.className="settings-result ok";el.textContent=`✓ Connected to ${s.broker} • ${s.topics_count} topics • '${s.topic}' ${s.topic_exists?"exists":"NOT found"}`;}
+    else{el.className="settings-result err";el.textContent="✗ "+(s.error||"connection failed");}
+  }catch(e){el.className="settings-result err";el.textContent="✗ test request failed";}
 }
 
 /* ---- cards ---- */
@@ -1197,6 +1457,7 @@ function renderFooter(){
 /* ---- boot ---- */
 renderHeader();renderTabs();renderFooter();selectTab("overview");
 nudgeTelemetry();setInterval(liveTick,2000);       // keep the dashboard alive even while parked
+fetch("/config").then(r=>r.json()).then(s=>{if(s&&s.emit_interval_s)FLEETSIM.emitMs=Math.max(1000,s.emit_interval_s*1000);}).catch(()=>{});
 </script>
 </body>
 </html>

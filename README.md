@@ -30,9 +30,21 @@ to a Kafka topic.
   (OpenStreetMap via Overpass), re-routes and drives there, charges to 80–90% with
   realistic DC fast-charge telemetry (tapering kW, charge port state, positive pack
   current), then resumes to the original destination.
+- **Multi-vehicle fleet** — simulate 1–10 vehicles at once. Each gets its own
+  identity (VIN, model), random route, battery/charging cycle, and session file,
+  all driving concurrently on one shared map with distinct coloured markers. A
+  fleet list shows per-vehicle SOC/speed/phase; click a vehicle to focus the
+  detailed telemetry tabs on it. Each vehicle publishes to Kafka keyed by its
+  `vehicle_id`.
+- **Settings page** — configure the Kafka broker (host/port, topic, security
+  protocol, SASL mechanism/username/password) and the **send interval** (default
+  5s) from a Settings tab. Settings persist on the server (a JSON file in the
+  data volume) and apply at runtime. A **Test connection** button validates the
+  broker and reports topic existence.
 - **Persistence + streaming** — the Flask server appends every datapoint to an
-  NDJSON file under `telemetry/` and publishes it to a **Kafka** topic
-  (`connectedCar1`) with graceful degradation if the broker is unreachable.
+  NDJSON file under `telemetry/` and publishes it (via **confluent-kafka**) to a
+  **Kafka** topic (`connectedCar1`) with graceful degradation if the broker is
+  unreachable.
 
 ## Architecture
 
@@ -124,3 +136,14 @@ Changes made across the project's commits (oldest → newest):
   (tapering charge rate, `charge_port_state=CHARGING`, positive pack current, gear P),
   then automatically re-routes from the station to the original destination and
   continues. Charging datapoints are persisted alongside driving datapoints.
+
+### `pending` — Settings page, send interval, and multi-vehicle fleet
+- Switched the Kafka producer to **confluent-kafka** for robust SASL.
+- Added a **Settings tab**: configure broker, topic, security protocol, SASL
+  mechanism/username/password, and the **send interval** (default 5s). Settings
+  persist server-side (`/data/app_settings.json`, git-ignored) via `GET/POST
+  /config`; a `POST /kafka/test` endpoint powers the **Test connection** button.
+- Added a **multi-vehicle fleet** (selector 1–10 + Start all). Vehicles share one
+  map and animation/emit loop; each has its own identity, route, battery/charging
+  state, and Kafka key (`vehicle_id`). A fleet list shows per-vehicle stats and
+  switches the focused detailed dashboard.
