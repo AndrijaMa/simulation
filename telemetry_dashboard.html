@@ -305,6 +305,56 @@ DATA.navigation={session_id:null,city:NAV.city.name,instruction:"Idle",maneuver_
   eta_s:0,progress_pct:0,step_index:0,total_steps:0,sim_speed_x:NAV.simSpeed,turn_signal:"off",speed_limit_kmh:0,over_limit:false};
 DATA.weather={condition:"—",temp_c:null,feels_c:null,humidity_pct:null,precip_mm:null,wind_kmh:null,code:null,updated:null};
 
+/* ---- small live variation so the dashboard looks alive (jitter around a fixed baseline; no drift) ---- */
+/* [dot-path, amplitude (±), decimals]. Authoritative/derived fields (SOC, GPS, weather, nav, speeds) are excluded. */
+const JITTER=[
+  ["battery.pack_voltage_v",0.5,1],["battery.pack_current_a",4,1],
+  ["battery.pack_temp_min_c",0.3,1],["battery.pack_temp_max_c",0.3,1],
+  ["battery.cell_voltage_min_v",0.004,3],["battery.cell_voltage_max_v",0.004,3],
+  ["battery.cell_imbalance_mv",1.2,0],["battery.isolation_resistance_kohm",12,0],
+  ["drivetrain.motor_rpm.front_left",40,0],["drivetrain.motor_rpm.front_right",40,0],
+  ["drivetrain.motor_rpm.rear_left",45,0],["drivetrain.motor_rpm.rear_right",45,0],
+  ["drivetrain.motor_temp_c.front_left",0.6,0],["drivetrain.motor_temp_c.rear_left",0.6,0],
+  ["drivetrain.inverter_temp_c.front_left",0.5,0],["drivetrain.inverter_temp_c.rear_left",0.5,0],
+  ["dynamics.steering_angle_deg",0.4,1],["dynamics.yaw_rate_dps",0.2,1],
+  ["dynamics.pitch_deg",0.2,1],["dynamics.roll_deg",0.2,1],
+  ["dynamics.lateral_accel_ms2",0.12,2],["dynamics.vertical_accel_ms2",0.03,2],
+  ["dynamics.tire_pressure_kpa.fl",1.3,0],["dynamics.tire_pressure_kpa.fr",1.3,0],
+  ["dynamics.tire_pressure_kpa.rl",1.3,0],["dynamics.tire_pressure_kpa.rr",1.3,0],
+  ["dynamics.tire_temp_c.fl",0.4,0],["dynamics.tire_temp_c.rr",0.4,0],
+  ["air_suspension.reservoir_pressure_kpa",10,0],
+  ["thermal.cabin_temp_c",0.15,1],["thermal.battery_coolant_temp_c",0.3,0],["thermal.hvac_power_kw",0.1,1],
+  ["system.cellular_signal_dbm",2,0],["system.gateway_temp_c",0.6,0],
+  ["system.compute_temp_c",0.6,0],["system.adas_compute_temp_c",0.6,0],["system.low_voltage_battery_v",0.04,2],
+  ["location.hdop",0.08,2],["location.satellites_used",0.6,0]
+];
+function _leaf(path){const p=path.split(".");let o=DATA;for(let i=0;i<p.length-1;i++){if(o==null)return null;o=o[p[i]];}return o?[o,p[p.length-1]]:null;}
+let JBASE=null;
+function nudgeTelemetry(){
+  if(!JBASE){JBASE={};for(const [path] of JITTER){const lf=_leaf(path);if(lf&&typeof lf[0][lf[1]]==="number")JBASE[path]=lf[0][lf[1]];}}
+  for(const [path,amp,dec] of JITTER){
+    const lf=_leaf(path);if(!lf)continue;const base=JBASE[path];if(typeof base!=="number")continue;
+    const v=base+(Math.random()*2-1)*amp;
+    lf[0][lf[1]]=dec>0?+v.toFixed(dec):Math.round(v);
+  }
+}
+/* update visible numeric cards in place — never rebuilds the map */
+function refreshCards(){
+  document.querySelectorAll('#main .card[data-path]').forEach(c=>{
+    const parts=c.dataset.path.split(".");let v=DATA;for(const p of parts){if(v==null)break;v=v[p];}
+    if(typeof v==="number"){const val=c.querySelector(".val");
+      if(val&&!val.querySelector(".badge")){const u=unitFor(parts[parts.length-1]);val.innerHTML=`${v}${u?`<span class="unit">${u}</span>`:""}`;}
+    } else if(v&&typeof v==="object"&&!Array.isArray(v)){
+      const bs=c.querySelectorAll(".wheels .w b"),ent=Object.values(v).slice(0,bs.length);
+      bs.forEach((b,i)=>{if(typeof ent[i]==="number")b.textContent=ent[i];});
+    }
+  });
+}
+function liveTick(){
+  nudgeTelemetry();
+  if(activeTab==="overview")renderOverview();else refreshCards();
+}
+
 const D2R=Math.PI/180, R2D=180/Math.PI;
 function haversine(a,b){const dLat=(b[0]-a[0])*D2R,dLon=(b[1]-a[1])*D2R;
   const s=Math.sin(dLat/2)**2+Math.cos(a[0]*D2R)*Math.cos(b[0]*D2R)*Math.sin(dLon/2)**2;
@@ -889,6 +939,7 @@ function liveCards(){
   });
 }
 function postDatapoint(){
+  nudgeTelemetry();                                 // fresh small variation in every emitted datapoint
   const dp=JSON.parse(JSON.stringify(DATA));
   fetch("/ingest",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(dp)})
     .then(r=>r.json()).then(j=>{if(j&&j.ok){NAV.posts=j.count;
@@ -1145,6 +1196,7 @@ function renderFooter(){
 
 /* ---- boot ---- */
 renderHeader();renderTabs();renderFooter();selectTab("overview");
+nudgeTelemetry();setInterval(liveTick,2000);       // keep the dashboard alive even while parked
 </script>
 </body>
 </html>
