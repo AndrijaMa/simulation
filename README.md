@@ -32,7 +32,7 @@ to a Kafka topic.
   current), then resumes to the original destination.
 - **Persistence + streaming** — the Flask server appends every datapoint to an
   NDJSON file under `telemetry/` and publishes it to a **Kafka** topic
-  (`connectedcar`) with graceful degradation if the broker is unreachable.
+  (`connectedCar1`) with graceful degradation if the broker is unreachable.
 
 ## Architecture
 
@@ -61,7 +61,7 @@ to plan a route, then **▶ Start** to begin driving. Datapoints appear under
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `KAFKA_BROKER` | `orvill.ddns.net:9092` | Kafka bootstrap server. |
-| `KAFKA_TOPIC` | `connectedcar` | Destination topic. |
+| `KAFKA_TOPIC` | `connectedCar1` | Destination topic. |
 | `KAFKA_ENABLED` | `1` | Set to `0` to disable publishing. |
 
 > Note: telemetry is always saved to disk even if Kafka is unavailable.
@@ -73,7 +73,7 @@ to plan a route, then **▶ Start** to begin driving. Datapoints appear under
 Changes made across the project's commits (oldest → newest):
 
 ### `6e45a5c` — Initial release: telemetry dashboard + live A→B nav simulator
-- Flask server with `/ingest` (NDJSON to disk + Kafka publish to `connectedcar`).
+- Flask server with `/ingest` (NDJSON to disk + Kafka publish to `connectedCar1`).
 - Dockerized via docker-compose; Leaflet / OSRM / Nominatim navigation simulator.
 - Smooth ~60 fps map with a highlighted route and a datapoint emitted every 5 s.
 

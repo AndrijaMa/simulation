@@ -12,11 +12,11 @@ services:
     environment:
       - TELEMETRY_DIR=/data
       - KAFKA_BROKER=orvill.ddns.net:9092
-      - KAFKA_TOPIC=connectedcar1
+      - KAFKA_TOPIC=connectedCar1
       - KAFKA_ENABLED=1
       # SASL/PLAIN over plaintext; password is supplied from .env (git-ignored):
       - KAFKA_SECURITY_PROTOCOL=SASL_PLAINTEXT
       - KAFKA_SASL_MECHANISM=PLAIN
-      - KAFKA_SASL_USERNAME=clickstream
+      - KAFKA_SASL_USERNAME=admin
       - KAFKA_SASL_PASSWORD=${KAFKA_SASL_PASSWORD:-}
     restart: unless-stopped
