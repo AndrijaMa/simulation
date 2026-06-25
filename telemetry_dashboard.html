@@ -618,6 +618,8 @@ async function fetchWeather(lat,lon){
       precip_mm:cur.precipitation,wind_kmh:cur.wind_speed_10m,code:cur.weather_code,condition:wi[0],icon:wi[1],
       lat:+(+lat).toFixed(4),lon:+(+lon).toFixed(4),updated:new Date().toISOString()};
     DATA.weather=NAV.wx;
+    // reflect the real outside temperature in the thermal telemetry
+    if(typeof cur.temperature_2m==="number")DATA.thermal.outside_temp_c=+cur.temperature_2m.toFixed(1);
     renderWeather();
   }catch(e){}
 }
