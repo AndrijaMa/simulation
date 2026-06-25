@@ -150,6 +150,11 @@
      transform:rotate(-45deg);font-size:12px;font-weight:700;color:#fff;box-shadow:0 3px 9px rgba(0,0,0,.6)}
   .ab-pin span{transform:rotate(45deg)}
   .ab-a{background:var(--good)} .ab-b{background:var(--red)}
+  .ev-pin{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50% 50% 50% 0;
+     transform:rotate(-45deg);background:#19c37d;font-size:15px;box-shadow:0 3px 9px rgba(0,0,0,.6);border:2px solid #0c2;}
+  .ev-pin{animation:evpulse 1.2s ease-in-out infinite}
+  @keyframes evpulse{0%,100%{box-shadow:0 0 0 0 rgba(25,195,125,.6)}50%{box-shadow:0 0 0 8px rgba(25,195,125,0)}}
+  .ev-pin span{transform:rotate(45deg)}
   .nav-banner{position:absolute;left:16px;top:16px;z-index:500;display:flex;align-items:center;gap:14px;
      background:rgba(10,10,12,.82);border:1px solid var(--line);border-radius:16px;padding:12px 18px;max-width:62%;
      -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--shadow)}
@@ -284,8 +289,14 @@ const NAV={
   city:{name:"Stockholm", lat:59.3293, lon:18.0686},
   A:null, B:null, timeline:null, setMode:null,
   running:false, timer:null, tripT:0, seq:0, posts:0, session:null,
-  simSpeed:8, emitMs:5000, ingestOK:true, wx:null, wxTimer:null
+  simSpeed:8, emitMs:5000, ingestOK:true, wx:null, wxTimer:null,
+  soc:null, lastDist:0, phase:"idle", finalB:null,
+  socLow:15, chargeTarget:85, charger:null, chargeMarker:null,
+  diverting:false, chargeUnavailable:false,
+  chargeStart:0, chargeFrom:0, chargeDurMs:0
 };
+/* battery model: distance-based drain, demo-friendly so a charge stop is observable */
+const BATT={usableKwh:135.0, pctPerKm:1.35, elevPctPerM:0.02, kmPerPct:4.5};
 /* immutable baseline used to compute realistic drift over the trip */
 const BASE={odo:DATA.dynamics.odometer_km, soc:DATA.battery.pack_soc_pct, seq:DATA.message_seq};
 /* ensure a navigation domain exists so its tab is always present */
@@ -638,6 +649,12 @@ function navStart(){
   NAV.session=`${slug}-${ts}`;DATA.navigation.session_id=NAV.session;
   NAV.tripT=0;NAV.seq=0;NAV.posts=0;NAV.running=true;NAV.ingestOK=true;
   NAV.startWall=performance.now();
+  // reset trip battery/charging state; seed a low-ish SOC the first time so a charge stop is demonstrable
+  NAV.phase="driving";NAV.lastDist=0;NAV._lastGain=0;NAV.finalB=null;NAV.diverting=false;NAV.chargeUnavailable=false;
+  NAV.socLow=Math.round(10+Math.random()*10);          // trigger somewhere in the 10–20% band
+  // start a little above the threshold so the drain → charge → resume cycle is visible on a typical trip
+  NAV.soc=+(NAV.socLow+3+Math.random()*5).toFixed(1);
+  if(NAV.chargeMarker){NAV.map.removeLayer(NAV.chargeMarker);NAV.chargeMarker=null;}NAV.charger=null;
   const sb=document.getElementById("btnStart"),tb=document.getElementById("btnStop");
   if(sb)sb.disabled=true;if(tb)tb.disabled=false;
   const live=document.querySelector(".live");if(live)live.innerHTML='<span class="dot"></span> DRIVING';
@@ -649,19 +666,33 @@ function navStart(){
 }
 function navFrame(){
   if(!NAV.running)return;
+  if(NAV.phase==="charging"){chargeFrame();NAV.raf=requestAnimationFrame(navFrame);return;}
+  if(NAV.phase==="resuming"){NAV.raf=requestAnimationFrame(navFrame);return;}  // holding while we re-route
   NAV.tripT=navTripT();
   applyState(stateAtTime(NAV.tripT));
   if(activeTab==="location")liveCards();
-  if(NAV.tripT>=NAV.timeline.totalDur){navStop(true);return;}
+  maybeDivert();
+  if(NAV.tripT>=NAV.timeline.totalDur){onLegComplete();if(NAV.running)NAV.raf=requestAnimationFrame(navFrame);return;}
   NAV.raf=requestAnimationFrame(navFrame);
+}
+function maybeDivert(){
+  if(NAV.phase==="driving"&&!NAV.diverting&&!NAV.chargeUnavailable&&NAV.soc<=NAV.socLow){
+    NAV.diverting=true;beginDivert().then(()=>{NAV.diverting=false;});
+  }
 }
 function emitDatapoint(){
   if(!NAV.timeline)return;
+  if(NAV.phase==="charging"||NAV.phase==="resuming"){  // log charging datapoints too (vehicle parked)
+    const now=new Date();
+    DATA.event_timestamp=now.toISOString();DATA.ingest_timestamp=now.toISOString();
+    DATA.message_seq=BASE.seq+(++NAV.seq);
+    postDatapoint();return;
+  }
   NAV.tripT=navTripT();
   applyState(stateAtTime(NAV.tripT));               // keep datapoints correct even if frames throttle
   postDatapoint();
   if(activeTab==="navigation"||activeTab==="overview")selectTab(activeTab);
-  if(NAV.tripT>=NAV.timeline.totalDur)navStop(true);
+  if(NAV.tripT>=NAV.timeline.totalDur)onLegComplete();
 }
 function navStop(arrived){
   NAV.running=false;
@@ -672,6 +703,123 @@ function navStop(arrived){
   if(sb)sb.disabled=false;if(tb)tb.disabled=true;
   const live=document.querySelector(".live");if(live)live.innerHTML='<span class="dot"></span> '+(arrived===true?"ARRIVED":"LIVE");
   setStatus((arrived===true?"Arrived • ":"Stopped • ")+`${NAV.posts} datapoints saved${NAV.session?` → telemetry/${NAV.session}.ndjson`:""}`);
+}
+/* ---- battery: state of charge drains with distance; derived telemetry follows ---- */
+function setBatteryDerived(){
+  const soc=NAV.soc;
+  DATA.battery.pack_soc_pct=+soc.toFixed(1);
+  DATA.battery.energy_remaining_kwh=+(BATT.usableKwh*soc/100).toFixed(1);
+  DATA.battery.est_range_km=Math.round(soc*BATT.kmPerPct);
+  DATA.battery.pack_voltage_v=+(360+0.6*soc).toFixed(1);   // pack voltage tracks SOC
+}
+function drainBattery(st){
+  if(NAV.soc==null)NAV.soc=DATA.battery.pack_soc_pct;
+  const dKm=Math.max(0,(st.dist-NAV.lastDist)/1000);NAV.lastDist=st.dist;
+  if(NAV.phase!=="charging"){
+    const gain=Math.max(0,elevGainTo(st.dist)-(NAV._lastGain||0));NAV._lastGain=elevGainTo(st.dist);
+    NAV.soc=Math.max(0.5,NAV.soc-dKm*BATT.pctPerKm-gain*BATT.elevPctPerM);
+    const spd=Math.max(0,st.spd||0);
+    DATA.battery.charge_port_state="UNPLUGGED";
+    DATA.battery.charge_rate_kw=0.0;
+    DATA.battery.pack_current_a=-(60+spd*2.6);            // discharging while driving
+  }
+  setBatteryDerived();
+}
+/* ---- low battery → divert to nearest charging station, charge, then resume ---- */
+async function findCharger(lat,lon){
+  for(const rad of [3000,6000,12000]){
+    const q=`[out:json][timeout:25];(node["amenity"="charging_station"](around:${rad},${lat},${lon});way["amenity"="charging_station"](around:${rad},${lat},${lon}););out center 30;`;
+    try{
+      const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:"data="+encodeURIComponent(q)});
+      const j=await r.json();const els=(j&&j.elements)||[];
+      let best=null,bd=Infinity;
+      for(const e of els){
+        const la=e.lat!=null?e.lat:(e.center&&e.center.lat),lo=e.lon!=null?e.lon:(e.center&&e.center.lon);
+        if(la==null||lo==null)continue;
+        const d=haversine([lat,lon],[la,lo]);
+        if(d<bd){bd=d;best={lat:la,lon:lo,name:(e.tags&&(e.tags.name||e.tags.operator))||"Charging station",dist:d};}
+      }
+      if(best){const s=await snapToRoad(best);if(s){best.lat=s.lat;best.lon=s.lon;}return best;}
+    }catch(e){}
+  }
+  return null;
+}
+async function beginDivert(){
+  const cur={lat:DATA.location.gps_latitude,lon:DATA.location.gps_longitude};
+  setStatus(`⚠ Battery ${NAV.soc.toFixed(0)}% — locating nearest charging station…`);
+  const ch=await findCharger(cur.lat,cur.lon);
+  if(!ch){NAV.chargeUnavailable=true;setStatus(`⚠ No charging station found nearby — continuing on ${NAV.soc.toFixed(0)}%`);return;}
+  NAV.charger=ch;NAV.finalB=NAV.finalB||NAV.B;
+  if(NAV.chargeMarker)NAV.map.removeLayer(NAV.chargeMarker);
+  if(NAV.map){
+    const icon=L.divIcon({className:"",html:`<div class="ev-pin"><span>⚡</span></div>`,iconSize:[30,30],iconAnchor:[15,30]});
+    NAV.chargeMarker=L.marker([ch.lat,ch.lon],{icon,zIndexOffset:900}).addTo(NAV.map);
+  }
+  setStatus(`⚠ Battery ${NAV.soc.toFixed(0)}% — diverting to ${ch.name} (${fmtKm(ch.dist)} away)`);
+  await reroute(cur,{lat:ch.lat,lon:ch.lon},"toCharger");
+}
+async function reroute(from,to,phase){
+  const url=`https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=full&geometries=geojson&steps=true`;
+  try{
+    const r=await fetch(url);const j=await r.json();
+    if(j.code!=="Ok"||!j.routes||!j.routes.length){
+      if(phase==="toCharger"){NAV.chargeUnavailable=true;NAV.phase="driving";}
+      return;
+    }
+    buildTimeline(j.routes[0]);drawRoute();
+    NAV.elevReady=false;fetchElevations();
+    NAV.tripT=0;NAV.lastDist=0;NAV._lastGain=0;NAV.startWall=performance.now();NAV.phase=phase;
+  }catch(e){if(phase==="toCharger"){NAV.chargeUnavailable=true;NAV.phase="driving";}}
+}
+function startCharging(){
+  NAV.phase="charging";
+  NAV.chargeTarget=Math.round(80+Math.random()*10);            // charge to 80–90%
+  NAV.chargeFrom=NAV.soc;
+  NAV.chargeStart=performance.now();
+  NAV.chargeDurMs=Math.max(12000,(NAV.chargeTarget-NAV.soc)*350);// watchable charge time
+  if(NAV.map&&NAV.charger)NAV.map.setView([NAV.charger.lat,NAV.charger.lon],NAV.map.getZoom(),{animate:false});
+  setStatus(`🔌 Charging at ${NAV.charger?NAV.charger.name:"station"} • ${NAV.soc.toFixed(0)}% → ${NAV.chargeTarget}%`);
+}
+function chargeFrame(){
+  const frac=Math.min(1,(performance.now()-NAV.chargeStart)/NAV.chargeDurMs);
+  NAV.soc=NAV.chargeFrom+(NAV.chargeTarget-NAV.chargeFrom)*frac;
+  const rate=+(180*(1-0.55*(NAV.soc/100))).toFixed(1);        // DC fast-charge taper
+  DATA.drivetrain.vehicle_speed_kmh=0;DATA.location.gps_speed_kmh=0;
+  DATA.drivetrain.gear_position="P";
+  DATA.battery.charge_port_state="CHARGING";
+  DATA.battery.charge_rate_kw=rate;
+  DATA.battery.pack_current_a=+(rate*1000/Math.max(1,DATA.battery.pack_voltage_v)).toFixed(1);
+  setBatteryDerived();
+  DATA.navigation.instruction=`Charging at ${NAV.charger?NAV.charger.name:"station"}`;
+  DATA.navigation.phase="charging";DATA.navigation.turn_signal="off";
+  const b=document.getElementById("navBanner");
+  if(b){b.style.display="flex";
+    document.getElementById("nbArrow").textContent="🔌";
+    document.getElementById("nbInst").textContent=`Charging • ${NAV.soc.toFixed(0)}%`;
+    document.getElementById("nbSub").textContent=`Target ${NAV.chargeTarget}% • +${rate.toFixed(0)} kW`;
+    const lb=document.getElementById("nbLeft"),rb=document.getElementById("nbRight");
+    if(lb)lb.classList.remove("on");if(rb)rb.classList.remove("on");}
+  const sg=document.getElementById("spdSign");if(sg)sg.style.display="none";
+  setStatus(`🔌 Charging at ${NAV.charger?NAV.charger.name:"station"} • ${NAV.soc.toFixed(0)}% → ${NAV.chargeTarget}%`);
+  if(activeTab==="overview"||activeTab==="navigation")selectTab(activeTab);
+  if(frac>=1)finishCharging();
+}
+async function finishCharging(){
+  if(NAV.phase==="resuming")return;                 // guard against re-entry while re-routing
+  NAV.phase="resuming";
+  NAV.soc=NAV.chargeTarget;
+  DATA.battery.charge_port_state="UNPLUGGED";DATA.battery.charge_rate_kw=0.0;
+  DATA.battery.dc_fast_charge_count=(DATA.battery.dc_fast_charge_count||0)+1;
+  DATA.drivetrain.gear_position="D";
+  setBatteryDerived();
+  setStatus(`✓ Charged to ${NAV.chargeTarget}% — resuming to destination…`);
+  const dest=NAV.finalB||NAV.B;NAV.finalB=null;
+  await reroute({lat:NAV.charger.lat,lon:NAV.charger.lon},dest,"driving");
+  postDatapoint();
+}
+function onLegComplete(){
+  if(NAV.phase==="toCharger"){startCharging();return;}
+  navStop(true);
 }
 function applyState(st){
   const now=new Date();
@@ -687,7 +835,7 @@ function applyState(st){
   if(alt!=null){DATA.location.gps_altitude_m=Math.round(alt);DATA.location.elevation_gain_m=Math.round(elevGainTo(st.dist));}
   DATA.drivetrain.vehicle_speed_kmh=spd;
   DATA.dynamics.odometer_km=+(BASE.odo+st.dist/1000).toFixed(1);
-  DATA.battery.pack_soc_pct=Math.max(1,+(BASE.soc-(st.dist/1000)*0.18).toFixed(1));
+  drainBattery(st);
   const inst=maneuverText(st.man,st.name);
   const sig=turnSignal(st);
   DATA.navigation={session_id:NAV.session,city:NAV.city.name,
@@ -699,7 +847,9 @@ function applyState(st){
     route_duration_s:Math.round(NAV.timeline.totalDur),eta_s:Math.max(0,Math.round(NAV.timeline.totalDur-st.t)),
     progress_pct:+(100*st.dist/NAV.timeline.totalDist).toFixed(1),
     step_index:st.stepIndex,total_steps:st.totalSteps,sim_speed_x:NAV.simSpeed,turn_signal:sig,
-    speed_limit_kmh:Math.round(st.limit||0),over_limit:spd>(st.limit||999)};
+    speed_limit_kmh:Math.round(st.limit||0),over_limit:spd>(st.limit||999),
+    phase:NAV.phase,low_battery:NAV.soc<=NAV.socLow,
+    charging_station:NAV.charger?NAV.charger.name:null};
   if(NAV.map){
     if(!NAV.marker)NAV.marker=L.marker([st.lat,st.lon],{icon:vehIcon(st.head),zIndexOffset:1000}).addTo(NAV.map);
     else NAV.marker.setLatLng([st.lat,st.lon]);

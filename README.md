@@ -25,6 +25,11 @@ to a Kafka topic.
 - **Driver-assist visuals** — turn-signal blinkers that activate as the vehicle
   approaches a turn, and a speed-limit sign. The vehicle never exceeds the posted
   limit (speed is capped per segment).
+- **Battery & charging** — state of charge drains as the vehicle drives. When it
+  falls into the 10–20% band the car locates the nearest **real charging station**
+  (OpenStreetMap via Overpass), re-routes and drives there, charges to 80–90% with
+  realistic DC fast-charge telemetry (tapering kW, charge port state, positive pack
+  current), then resumes to the original destination.
 - **Persistence + streaming** — the Flask server appends every datapoint to an
   NDJSON file under `telemetry/` and publishes it to a **Kafka** topic
   (`connectedcar`) with graceful degradation if the broker is unreachable.
@@ -107,3 +112,15 @@ Changes made across the project's commits (oldest → newest):
   Vela One, Nova S), one picked per session.
 - Neutral fictive VIN prefix; the subtitle UI reflects the new brand.
 - Renamed and updated the sample data files (`voltessa_telemetry_sample.*`).
+
+### `071a06b` — Battery drain and automatic charging stops
+- State of charge is now a stateful value that drains with distance driven across
+  every leg of a trip (with a small extra cost for uphill elevation gain), updating
+  derived telemetry: energy remaining, estimated range, pack voltage and current.
+- When SOC drops into the 10–20% band, the vehicle queries **Overpass** for the
+  nearest `amenity=charging_station`, snaps it to a road, re-routes from its current
+  position and drives there (a pulsing ⚡ marker marks the station).
+- On arrival it charges to a random 80–90% target with DC fast-charge telemetry
+  (tapering charge rate, `charge_port_state=CHARGING`, positive pack current, gear P),
+  then automatically re-routes from the station to the original destination and
+  continues. Charging datapoints are persisted alongside driving datapoints.
