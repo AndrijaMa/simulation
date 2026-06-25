@@ -137,7 +137,7 @@ Changes made across the project's commits (oldest → newest):
   then automatically re-routes from the station to the original destination and
   continues. Charging datapoints are persisted alongside driving datapoints.
 
-### `pending` — Settings page, send interval, and multi-vehicle fleet
+### `a7eed50` — Settings page, send interval, and multi-vehicle fleet
 - Switched the Kafka producer to **confluent-kafka** for robust SASL.
 - Added a **Settings tab**: configure broker, topic, security protocol, SASL
   mechanism/username/password, and the **send interval** (default 5s). Settings
