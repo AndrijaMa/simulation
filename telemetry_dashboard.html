@@ -335,12 +335,16 @@ function initNav(){
   if(NAV.A)placePin("A",NAV.A);
   if(NAV.B)placePin("B",NAV.B);
   if(NAV.timeline){drawRoute();NAV.map.fitBounds(NAV.routeLayer.getBounds(),{padding:[40,40]});}
-  NAV.map.on("click",e=>{
-    if(NAV.setMode==="A"){NAV.A={lat:e.latlng.lat,lon:e.latlng.lng};placePin("A",NAV.A);}
-    else if(NAV.setMode==="B"){NAV.B={lat:e.latlng.lat,lon:e.latlng.lng};placePin("B",NAV.B);}
-    else return;
+  NAV.map.on("click",async e=>{
+    const w=NAV.setMode;
+    if(w!=="A"&&w!=="B")return;
     NAV.setMode=null;updateModeBtns();
-    if(NAV.A&&NAV.B)navRoute();
+    setStatus("Snapping to nearest road…");
+    const s=await snapToRoad({lat:e.latlng.lat,lon:e.latlng.lng});
+    const pt=s?{lat:s.lat,lon:s.lon}:{lat:e.latlng.lat,lon:e.latlng.lng};
+    if(w==="A")NAV.A=pt; else NAV.B=pt;
+    placePin(w,pt);
+    if(NAV.A&&NAV.B)navRoute(); else setStatus("");
   });
   setTimeout(()=>{if(NAV.map)NAV.map.invalidateSize();},120);
 }
@@ -366,10 +370,35 @@ async function navGoCity(){
     navRandom();
   }catch(e){setStatus("Lookup failed — check the connection.");}
 }
+/* snap any coordinate to the nearest public road (OSRM driving network => on land, on a road) */
+async function snapToRoad(pt){
+  try{
+    const u=`https://router.project-osrm.org/nearest/v1/driving/${pt.lon},${pt.lat}?number=1`;
+    const r=await fetch(u);const j=await r.json();
+    if(j.code==="Ok"&&j.waypoints&&j.waypoints.length){
+      const w=j.waypoints[0];
+      return {lat:w.location[1],lon:w.location[0],snap:w.distance};
+    }
+  }catch(e){}
+  return null;
+}
+async function pickRoadPoint(){
+  let last=null;
+  for(let i=0;i<6;i++){
+    const s=await snapToRoad(randNear(NAV.city.lat,NAV.city.lon,3500));
+    if(s){last={lat:s.lat,lon:s.lon};if(s.snap<=600)return last;} // close to a road => genuinely on land
+  }
+  if(last)return last;
+  const c=await snapToRoad({lat:NAV.city.lat,lon:NAV.city.lon});
+  return c?{lat:c.lat,lon:c.lon}:{lat:NAV.city.lat,lon:NAV.city.lon};
+}
 async function navRandom(){
   if(!NAV.map)return;
-  NAV.A=randNear(NAV.city.lat,NAV.city.lon,3500);
-  NAV.B=randNear(NAV.city.lat,NAV.city.lon,3500);
+  setStatus("Finding road points…");
+  NAV.A=await pickRoadPoint();
+  let B=await pickRoadPoint(),tries=0;
+  while(tries++<8 && haversine([NAV.A.lat,NAV.A.lon],[B.lat,B.lon])<800) B=await pickRoadPoint();
+  NAV.B=B;
   placePin("A",NAV.A);placePin("B",NAV.B);
   await navRoute();
 }
