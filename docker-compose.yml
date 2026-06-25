@@ -1,0 +1,17 @@
+services:
+  telemetry:
+    build: .
+    container_name: connected-vehicle
+    ports:
+      - "8080:8080"
+    volumes:
+      # datapoints are written here on the host:
+      - ./telemetry:/data
+      # live-edit the dashboard without rebuilding the image:
+      - ./telemetry_dashboard.html:/app/telemetry_dashboard.html:ro
+    environment:
+      - TELEMETRY_DIR=/data
+      - KAFKA_BROKER=orvill.ddns.net:9092
+      - KAFKA_TOPIC=connectedcar
+      - KAFKA_ENABLED=1
+    restart: unless-stopped

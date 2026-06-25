@@ -1,0 +1,12 @@
+# generated telemetry output (keep the folder, not the data)
+telemetry/*.ndjson
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# os / editor
+.DS_Store
+*.swp
