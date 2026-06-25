@@ -17,3 +17,6 @@ certs/*.key
 certs/*.crt
 certs/*.p12
 certs/*.jks
+
+# local secrets (never commit)
+.env
