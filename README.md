@@ -113,7 +113,7 @@ Changes made across the project's commits (oldest → newest):
 - Neutral fictive VIN prefix; the subtitle UI reflects the new brand.
 - Renamed and updated the sample data files (`voltessa_telemetry_sample.*`).
 
-### `071a06b` — Battery drain and automatic charging stops
+### `f88f5fd` — Battery drain and automatic charging stops
 - State of charge is now a stateful value that drains with distance driven across
   every leg of a trip (with a small extra cost for uphill elevation gain), updating
   derived telemetry: energy remaining, estimated range, pack voltage and current.
