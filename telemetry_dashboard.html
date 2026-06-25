@@ -167,6 +167,11 @@
   .wx-ico{font-size:26px;line-height:1}
   .wx-temp{font-size:18px;font-weight:600;letter-spacing:-.3px}
   .wx-meta{font-size:11px;color:var(--muted);margin-top:1px}
+  /* speed-limit sign */
+  .spd-sign{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:500;
+     width:54px;height:54px;border-radius:50%;background:#fff;border:6px solid #d52b1e;
+     display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);
+     font-weight:800;color:#111;font-size:19px;line-height:1;font-family:Arial,Helvetica,sans-serif}
 
   /* modal */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
@@ -277,7 +282,7 @@ const BASE={odo:DATA.dynamics.odometer_km, soc:DATA.battery.pack_soc_pct, seq:DA
 /* ensure a navigation domain exists so its tab is always present */
 DATA.navigation={session_id:null,city:NAV.city.name,instruction:"Idle",maneuver_type:"",road_name:"",
   distance_to_turn_m:0,distance_remaining_m:0,distance_travelled_m:0,route_distance_m:0,route_duration_s:0,
-  eta_s:0,progress_pct:0,step_index:0,total_steps:0,sim_speed_x:NAV.simSpeed,turn_signal:"off"};
+  eta_s:0,progress_pct:0,step_index:0,total_steps:0,sim_speed_x:NAV.simSpeed,turn_signal:"off",speed_limit_kmh:0,over_limit:false};
 DATA.weather={condition:"—",temp_c:null,feels_c:null,humidity_pct:null,precip_mm:null,wind_kmh:null,code:null,updated:null};
 
 const D2R=Math.PI/180, R2D=180/Math.PI;
@@ -328,6 +333,7 @@ function renderLocationPanel(){
        <div class="wx-ico" id="wxIco">·</div>
        <div><div class="wx-temp" id="wxTemp">—</div><div class="wx-meta" id="wxMeta">—</div></div>
      </div>
+     <div class="spd-sign" id="spdSign" style="display:none"><span id="spdSignVal">—</span></div>
      <div class="map-overlay" id="navChips" style="z-index:500"></div>
    </div>`;
 }
@@ -446,16 +452,36 @@ function drawRoute(){
 }
 
 /* ---- trip timeline (time → distance → lat/lon) ---- */
+/* standard posted speed limits (km/h); we never let the vehicle exceed the nearest one */
+const SPEED_LIMITS=[30,50,70,90,110,130];
+function postedLimit(nominalKmh){
+  if(!(nominalKmh>0))return 50;
+  let best=SPEED_LIMITS[0],bd=Infinity;
+  for(const L of SPEED_LIMITS){const d=Math.abs(L-nominalKmh);if(d<=bd){bd=d;best=L;}}
+  return best;
+}
 function buildTimeline(route){
   const coords=route.geometry.coordinates.map(c=>[c[1],c[0]]);
   const cum=[0];for(let i=1;i<coords.length;i++)cum[i]=cum[i-1]+haversine(coords[i-1],coords[i]);
   const geoTotal=cum[cum.length-1];
   const steps=(route.legs[0]&&route.legs[0].steps)||[];
-  let td=0,dd=0;
-  const segs=steps.map(s=>{const dur=s.duration||0.001;const seg={t0:td,t1:td+dur,d0:dd,d1:dd+(s.distance||0),
-    spd:(s.distance&&dur)?(s.distance/dur)*3.6:0,man:s.maneuver||{},name:s.name||""};td=seg.t1;dd=seg.d1;return seg;});
-  const k=dd?geoTotal/dd:1;segs.forEach(s=>{s.d0*=k;s.d1*=k;});
-  NAV.timeline={coords,cum,segs,totalDist:geoTotal,totalDur:td||Math.max(1,geoTotal/13.8)};
+  // first pass: nominal speed (OSRM profile) + raw step distance
+  let dd=0;
+  const segs=steps.map(s=>{const dur=s.duration||0.001,dist=s.distance||0;
+    const nominal=(dist&&dur)?(dist/dur)*3.6:0;
+    const seg={d0:dd,d1:dd+dist,nominal,man:s.maneuver||{},name:s.name||""};dd=seg.d1;return seg;});
+  const k=dd?geoTotal/dd:1;
+  // second pass: scale to geometry, cap speed to the posted limit, recompute timing so we drive at/under it
+  let t=0;
+  segs.forEach(s=>{
+    s.d0*=k;s.d1*=k;
+    s.limit=postedLimit(s.nominal);
+    s.spd=Math.min(s.nominal,s.limit);   // never exceed the limit
+    const lenGeo=s.d1-s.d0,mps=s.spd>0?s.spd/3.6:0;
+    const dur=mps>0?lenGeo/mps:0.001;
+    s.t0=t;s.t1=t+dur;t=s.t1;
+  });
+  NAV.timeline={coords,cum,segs,totalDist:geoTotal,totalDur:t||Math.max(1,geoTotal/13.8)};
 }
 function distToLatLon(d){
   const {coords,cum}=NAV.timeline,total=cum[cum.length-1];
@@ -472,7 +498,7 @@ function stateAtTime(t){
   const next=tl.segs[i+1];
   const distToTurn=next?Math.max(0,next.d0-dist):Math.max(0,s.d1-dist);
   const man=next?next.man:{type:"arrive"},name=next?next.name:"";
-  return {lat:p.lat,lon:p.lon,head:p.head,dist,spd:s.spd,stepIndex:i,totalSteps:tl.segs.length,distToTurn,man,name,t};
+  return {lat:p.lat,lon:p.lon,head:p.head,dist,spd:s.spd,limit:s.limit,stepIndex:i,totalSteps:tl.segs.length,distToTurn,man,name,t};
 }
 function traveledCoords(d){
   const {coords,cum}=NAV.timeline,out=[coords[0]];
@@ -626,7 +652,8 @@ function applyState(st){
     distance_travelled_m:Math.round(st.dist),route_distance_m:Math.round(NAV.timeline.totalDist),
     route_duration_s:Math.round(NAV.timeline.totalDur),eta_s:Math.max(0,Math.round(NAV.timeline.totalDur-st.t)),
     progress_pct:+(100*st.dist/NAV.timeline.totalDist).toFixed(1),
-    step_index:st.stepIndex,total_steps:st.totalSteps,sim_speed_x:NAV.simSpeed,turn_signal:sig};
+    step_index:st.stepIndex,total_steps:st.totalSteps,sim_speed_x:NAV.simSpeed,turn_signal:sig,
+    speed_limit_kmh:Math.round(st.limit||0),over_limit:spd>(st.limit||999)};
   if(NAV.map){
     if(!NAV.marker)NAV.marker=L.marker([st.lat,st.lon],{icon:vehIcon(st.head),zIndexOffset:1000}).addTo(NAV.map);
     else NAV.marker.setLatLng([st.lat,st.lon]);
@@ -648,6 +675,8 @@ function updateNavOverlay(st,inst,sig){
     const lb=document.getElementById("nbLeft"),rb=document.getElementById("nbRight");
     if(lb)lb.classList.toggle("on",sig==="left");
     if(rb)rb.classList.toggle("on",sig==="right");}
+  const sg=document.getElementById("spdSign");
+  if(sg){if(st.limit){sg.style.display="flex";document.getElementById("spdSignVal").textContent=Math.round(st.limit);}else sg.style.display="none";}
   const c=document.getElementById("navChips");
   if(c)c.innerHTML=`
     <div class="map-chip"><span class="k">Speed</span><span class="v">${Math.round(st.spd)} km/h</span></div>
