@@ -1,8 +1,8 @@
 {
-    "vehicle_id": "7FCTGAAA1PN012945",
-    "make": "Rivian",
-    "model": "R1T Quad-Motor",
-    "trim": "Adventure",
+    "vehicle_id": "VLTTGAAA1PN012945",
+    "make": "Voltessa",
+    "model": "Terra GT",
+    "trim": "Summit",
     "event_timestamp": "2026-06-25T14:32:07.000Z",
     "ingest_timestamp": "2026-06-25T14:32:07.388Z",
     "message_seq": 991045,
