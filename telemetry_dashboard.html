@@ -440,6 +440,7 @@ async function navRoute(){
     const sb=document.getElementById("btnStart");if(sb)sb.disabled=false;
     setStatus(`Route ready • ${fmtKm(NAV.timeline.totalDist)} • ${fmtDur(NAV.timeline.totalDur)} • press ▶ Start`);
     fetchWeather(NAV.A.lat,NAV.A.lon); // weather at the start of the route
+    fetchElevations();                 // real terrain elevation along the route
   }catch(e){setStatus("Routing failed — check the connection.");}
 }
 function drawRoute(){
@@ -482,6 +483,40 @@ function buildTimeline(route){
     s.t0=t;s.t1=t+dur;t=s.t1;
   });
   NAV.timeline={coords,cum,segs,totalDist:geoTotal,totalDur:t||Math.max(1,geoTotal/13.8)};
+}
+/* ---- real terrain elevation along the route (Open-Meteo, no API key) ---- */
+async function fetchElevations(){
+  const tl=NAV.timeline;if(!tl)return;
+  const coords=tl.coords,cum=tl.cum,n=coords.length;if(!n)return;
+  const N=Math.min(n,100);                                   // API allows up to 100 points per call
+  const idx=[];for(let i=0;i<N;i++)idx.push(Math.round(i*(n-1)/((N-1)||1)));
+  const uniq=[...new Set(idx)];
+  const lats=uniq.map(i=>coords[i][0].toFixed(5)).join(",");
+  const lons=uniq.map(i=>coords[i][1].toFixed(5)).join(",");
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lons}`);
+    const j=await r.json();
+    if(!j||!j.elevation||!j.elevation.length)return;
+    tl.elev=uniq.map((ci,k)=>({d:cum[ci],e:j.elevation[k]})); // {distance, elevation} sorted by distance
+    if(NAV.timeline===tl){applyState(stateAtTime(NAV.tripT));if(activeTab==="location")liveCards();} // refresh altitude now
+  }catch(e){}
+}
+function elevAtDist(d){
+  const tl=NAV.timeline,s=tl&&tl.elev;if(!s||!s.length)return null;
+  if(d<=s[0].d)return s[0].e;
+  if(d>=s[s.length-1].d)return s[s.length-1].e;
+  let i=1;while(i<s.length&&s[i].d<d)i++;
+  const a=s[i-1],b=s[i],f=(d-a.d)/((b.d-a.d)||1);
+  return a.e+(b.e-a.e)*f;
+}
+function elevGainTo(d){
+  const tl=NAV.timeline,s=tl&&tl.elev;if(!s||!s.length)return 0;
+  let gain=0,prev=s[0].e;
+  for(let i=1;i<s.length;i++){
+    if(s[i].d<=d){if(s[i].e>prev)gain+=s[i].e-prev;prev=s[i].e;}
+    else{const a=s[i-1],f=(d-a.d)/((s[i].d-a.d)||1),e=a.e+(s[i].e-a.e)*f;if(e>prev)gain+=e-prev;break;}
+  }
+  return gain;
 }
 function distToLatLon(d){
   const {coords,cum}=NAV.timeline,total=cum[cum.length-1];
@@ -639,6 +674,8 @@ function applyState(st){
   DATA.location.gps_heading_deg=Math.round(st.head);
   DATA.location.gps_speed_kmh=spd;
   DATA.location.trip_distance_km=+(st.dist/1000).toFixed(2);
+  const alt=elevAtDist(st.dist);
+  if(alt!=null){DATA.location.gps_altitude_m=Math.round(alt);DATA.location.elevation_gain_m=Math.round(elevGainTo(st.dist));}
   DATA.drivetrain.vehicle_speed_kmh=spd;
   DATA.dynamics.odometer_km=+(BASE.odo+st.dist/1000).toFixed(1);
   DATA.battery.pack_soc_pct=Math.max(1,+(BASE.soc-(st.dist/1000)*0.18).toFixed(1));
