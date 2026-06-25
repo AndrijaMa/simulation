@@ -156,6 +156,17 @@
   .nb-arrow{font-size:30px;line-height:1;color:var(--accent);min-width:30px;text-align:center}
   .nb-inst{font-size:17px;font-weight:600;letter-spacing:-.2px}
   .nb-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  /* turn-signal indicators */
+  .nb-blink{font-size:26px;line-height:1;color:#ffb020;opacity:.12;min-width:24px;text-align:center}
+  .nb-blink.on{animation:blink .55s steps(1,end) infinite}
+  @keyframes blink{0%,49.9%{opacity:1;filter:drop-shadow(0 0 8px rgba(255,176,32,.95))}50%,100%{opacity:.12;filter:none}}
+  /* live weather widget */
+  .wx-widget{position:absolute;right:16px;top:16px;z-index:500;display:flex;align-items:center;gap:11px;
+     background:rgba(10,10,12,.82);border:1px solid var(--line);border-radius:14px;padding:9px 15px;
+     -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--shadow)}
+  .wx-ico{font-size:26px;line-height:1}
+  .wx-temp{font-size:18px;font-weight:600;letter-spacing:-.3px}
+  .wx-meta{font-size:11px;color:var(--muted);margin-top:1px}
 
   /* modal */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
@@ -259,14 +270,15 @@ const NAV={
   city:{name:"Stockholm", lat:59.3293, lon:18.0686},
   A:null, B:null, timeline:null, setMode:null,
   running:false, timer:null, tripT:0, seq:0, posts:0, session:null,
-  simSpeed:8, emitMs:5000, ingestOK:true
+  simSpeed:8, emitMs:5000, ingestOK:true, wx:null, wxTimer:null
 };
 /* immutable baseline used to compute realistic drift over the trip */
 const BASE={odo:DATA.dynamics.odometer_km, soc:DATA.battery.pack_soc_pct, seq:DATA.message_seq};
 /* ensure a navigation domain exists so its tab is always present */
 DATA.navigation={session_id:null,city:NAV.city.name,instruction:"Idle",maneuver_type:"",road_name:"",
   distance_to_turn_m:0,distance_remaining_m:0,distance_travelled_m:0,route_distance_m:0,route_duration_s:0,
-  eta_s:0,progress_pct:0,step_index:0,total_steps:0,sim_speed_x:NAV.simSpeed};
+  eta_s:0,progress_pct:0,step_index:0,total_steps:0,sim_speed_x:NAV.simSpeed,turn_signal:"off"};
+DATA.weather={condition:"—",temp_c:null,feels_c:null,humidity_pct:null,precip_mm:null,wind_kmh:null,code:null,updated:null};
 
 const D2R=Math.PI/180, R2D=180/Math.PI;
 function haversine(a,b){const dLat=(b[0]-a[0])*D2R,dLon=(b[1]-a[1])*D2R;
@@ -307,8 +319,14 @@ function renderLocationPanel(){
    <div class="map-wrap" style="height:460px">
      <div id="leaflet" style="position:absolute;inset:0;z-index:1"></div>
      <div class="nav-banner" id="navBanner" style="display:none">
+       <div class="nb-blink" id="nbLeft">&#9664;</div>
        <div class="nb-arrow" id="nbArrow">↑</div>
        <div class="nb-text"><div class="nb-inst" id="nbInst">—</div><div class="nb-sub" id="nbSub">—</div></div>
+       <div class="nb-blink" id="nbRight">&#9654;</div>
+     </div>
+     <div class="wx-widget" id="wxWidget" style="display:none">
+       <div class="wx-ico" id="wxIco">·</div>
+       <div><div class="wx-temp" id="wxTemp">—</div><div class="wx-meta" id="wxMeta">—</div></div>
      </div>
      <div class="map-overlay" id="navChips" style="z-index:500"></div>
    </div>`;
@@ -329,7 +347,7 @@ function initNav(){
   const el=document.getElementById("leaflet");if(!el)return;
   NAV.map=L.map(el,{zoomControl:false,attributionControl:true}).setView([NAV.city.lat,NAV.city.lon],13);
   NAV.map.attributionControl.setPrefix('Leaflet'); // drop the default flag graphic
-  L.control.zoom({position:"topright"}).addTo(NAV.map);
+  L.control.zoom({position:"bottomright"}).addTo(NAV.map);
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
     {maxZoom:19,subdomains:"abcd",attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(NAV.map);
   if(NAV.A)placePin("A",NAV.A);
@@ -347,6 +365,8 @@ function initNav(){
     if(NAV.A&&NAV.B)navRoute(); else setStatus("");
   });
   setTimeout(()=>{if(NAV.map)NAV.map.invalidateSize();},120);
+  renderWeather();                                   // show cached weather if we have it
+  fetchWeather(NAV.city.lat,NAV.city.lon);           // live weather for the current city
 }
 function updateModeBtns(){const a=document.getElementById("btnA"),b=document.getElementById("btnB");
   if(a)a.classList.toggle("on",NAV.setMode==="A");if(b)b.classList.toggle("on",NAV.setMode==="B");}
@@ -413,6 +433,7 @@ async function navRoute(){
     NAV.map.fitBounds(NAV.routeLayer.getBounds(),{padding:[40,40]});
     const sb=document.getElementById("btnStart");if(sb)sb.disabled=false;
     setStatus(`Route ready • ${fmtKm(NAV.timeline.totalDist)} • ${fmtDur(NAV.timeline.totalDur)} • press ▶ Start`);
+    fetchWeather(NAV.A.lat,NAV.A.lon); // weather at the start of the route
   }catch(e){setStatus("Routing failed — check the connection.");}
 }
 function drawRoute(){
@@ -485,6 +506,54 @@ function arrowFor(m){const md=(m&&m.modifier)||"",ty=(m&&m.type)||"";
   if(md==="slight left")return "↖";if(md==="slight right")return "↗";
   if(md.indexOf("left")>=0)return "⬅";if(md.indexOf("right")>=0)return "➡";
   return "↑";}
+/* which indicator to blink as we approach the next maneuver */
+function turnSignal(st){
+  const m=st.man||{},ty=m.type||"",mod=m.modifier||"";
+  if(ty==="arrive"||ty==="depart")return "off";
+  const lead=Math.max(40,Math.min(180,(st.spd||30)*4)); // start blinking a few seconds before the turn
+  if(st.distToTurn>lead)return "off";
+  if(mod.indexOf("uturn")>=0)return "left";
+  if(mod.indexOf("left")>=0)return "left";
+  if(mod.indexOf("right")>=0)return "right";
+  return "off";
+}
+/* ---- live weather (Open-Meteo, no API key, CORS-friendly) ---- */
+function weatherInfo(c){
+  const m={0:["Clear","☀️"],1:["Mainly clear","🌤️"],2:["Partly cloudy","⛅"],3:["Overcast","☁️"],
+    45:["Fog","🌫️"],48:["Rime fog","🌫️"],51:["Light drizzle","🌦️"],53:["Drizzle","🌦️"],55:["Dense drizzle","🌧️"],
+    56:["Freezing drizzle","🌧️"],57:["Freezing drizzle","🌧️"],61:["Light rain","🌦️"],63:["Rain","🌧️"],65:["Heavy rain","🌧️"],
+    66:["Freezing rain","🌧️"],67:["Freezing rain","🌧️"],71:["Light snow","🌨️"],73:["Snow","🌨️"],75:["Heavy snow","❄️"],
+    77:["Snow grains","🌨️"],80:["Rain showers","🌦️"],81:["Rain showers","🌧️"],82:["Violent showers","⛈️"],
+    85:["Snow showers","🌨️"],86:["Snow showers","❄️"],95:["Thunderstorm","⛈️"],96:["Thunderstorm","⛈️"],99:["Thunderstorm","⛈️"]};
+  return m[c]||["—","🌡️"];
+}
+async function fetchWeather(lat,lon){
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`;
+    const r=await fetch(u);const j=await r.json();
+    if(!j||!j.current)return;
+    const cur=j.current,wi=weatherInfo(cur.weather_code);
+    NAV.wx={temp_c:cur.temperature_2m,feels_c:cur.apparent_temperature,humidity_pct:cur.relative_humidity_2m,
+      precip_mm:cur.precipitation,wind_kmh:cur.wind_speed_10m,code:cur.weather_code,condition:wi[0],icon:wi[1],
+      lat:+(+lat).toFixed(4),lon:+(+lon).toFixed(4),updated:new Date().toISOString()};
+    DATA.weather=NAV.wx;
+    renderWeather();
+  }catch(e){}
+}
+function renderWeather(){
+  const el=document.getElementById("wxWidget");if(!el)return;
+  const w=NAV.wx;
+  if(!w){el.style.display="none";return;}
+  el.style.display="flex";
+  document.getElementById("wxIco").textContent=w.icon;
+  document.getElementById("wxTemp").textContent=`${Math.round(w.temp_c)}°C`;
+  document.getElementById("wxMeta").textContent=`${w.condition} • 💧${Math.round(w.humidity_pct)}% • 💨${Math.round(w.wind_kmh)} km/h`;
+}
+function weatherForCurrent(){
+  let lat=NAV.city.lat,lon=NAV.city.lon;
+  if(DATA.location&&DATA.location.gps_latitude){lat=DATA.location.gps_latitude;lon=DATA.location.gps_longitude;}
+  fetchWeather(lat,lon);
+}
 
 /* ---- simulation: smooth ~60fps visual loop + datapoint emit every 5s ---- */
 function navTripT(){
@@ -504,6 +573,8 @@ function navStart(){
   const live=document.querySelector(".live");if(live)live.innerHTML='<span class="dot"></span> DRIVING';
   emitDatapoint();                                  // first datapoint right away
   NAV.timer=setInterval(emitDatapoint,NAV.emitMs);  // persist a datapoint every 5s
+  weatherForCurrent();                              // refresh weather at trip start
+  NAV.wxTimer=setInterval(weatherForCurrent,600000); // and every 10 min along the way
   NAV.raf=requestAnimationFrame(navFrame);          // smooth visual updates
 }
 function navFrame(){
@@ -525,6 +596,7 @@ function emitDatapoint(){
 function navStop(arrived){
   NAV.running=false;
   if(NAV.timer){clearInterval(NAV.timer);NAV.timer=null;}
+  if(NAV.wxTimer){clearInterval(NAV.wxTimer);NAV.wxTimer=null;}
   if(NAV.raf){cancelAnimationFrame(NAV.raf);NAV.raf=null;}
   const sb=document.getElementById("btnStart"),tb=document.getElementById("btnStop");
   if(sb)sb.disabled=false;if(tb)tb.disabled=true;
@@ -545,6 +617,7 @@ function applyState(st){
   DATA.dynamics.odometer_km=+(BASE.odo+st.dist/1000).toFixed(1);
   DATA.battery.pack_soc_pct=Math.max(1,+(BASE.soc-(st.dist/1000)*0.18).toFixed(1));
   const inst=maneuverText(st.man,st.name);
+  const sig=turnSignal(st);
   DATA.navigation={session_id:NAV.session,city:NAV.city.name,
     origin:NAV.A?{lat:+NAV.A.lat.toFixed(6),lon:+NAV.A.lon.toFixed(6)}:null,
     destination:NAV.B?{lat:+NAV.B.lat.toFixed(6),lon:+NAV.B.lon.toFixed(6)}:null,
@@ -553,7 +626,7 @@ function applyState(st){
     distance_travelled_m:Math.round(st.dist),route_distance_m:Math.round(NAV.timeline.totalDist),
     route_duration_s:Math.round(NAV.timeline.totalDur),eta_s:Math.max(0,Math.round(NAV.timeline.totalDur-st.t)),
     progress_pct:+(100*st.dist/NAV.timeline.totalDist).toFixed(1),
-    step_index:st.stepIndex,total_steps:st.totalSteps,sim_speed_x:NAV.simSpeed};
+    step_index:st.stepIndex,total_steps:st.totalSteps,sim_speed_x:NAV.simSpeed,turn_signal:sig};
   if(NAV.map){
     if(!NAV.marker)NAV.marker=L.marker([st.lat,st.lon],{icon:vehIcon(st.head),zIndexOffset:1000}).addTo(NAV.map);
     else NAV.marker.setLatLng([st.lat,st.lon]);
@@ -564,14 +637,17 @@ function applyState(st){
     if(NAV.travelLayer)NAV.travelLayer.setLatLngs(trav);
     else NAV.travelLayer=L.polyline(trav,{color:"#6ec8ff",weight:7,opacity:1,lineJoin:"round",lineCap:"round",className:"travel-glow"}).addTo(NAV.map);
   }
-  updateNavOverlay(st,inst);
+  updateNavOverlay(st,inst,sig);
 }
-function updateNavOverlay(st,inst){
+function updateNavOverlay(st,inst,sig){
   const b=document.getElementById("navBanner");
   if(b){b.style.display="flex";
     document.getElementById("nbArrow").textContent=arrowFor(st.man);
     document.getElementById("nbInst").textContent=inst;
-    document.getElementById("nbSub").textContent=`${fmtKm(st.distToTurn)} • then ${fmtKm(NAV.timeline.totalDist-st.dist)} to arrival`;}
+    document.getElementById("nbSub").textContent=`${fmtKm(st.distToTurn)} • then ${fmtKm(NAV.timeline.totalDist-st.dist)} to arrival`;
+    const lb=document.getElementById("nbLeft"),rb=document.getElementById("nbRight");
+    if(lb)lb.classList.toggle("on",sig==="left");
+    if(rb)rb.classList.toggle("on",sig==="right");}
   const c=document.getElementById("navChips");
   if(c)c.innerHTML=`
     <div class="map-chip"><span class="k">Speed</span><span class="v">${Math.round(st.spd)} km/h</span></div>
