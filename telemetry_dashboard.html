@@ -1255,6 +1255,7 @@ function renderSettings(){
     <div class="settings-row">
       <button class="nc-btn start" onclick="saveSettings()">Save</button>
       <button class="nc-btn" onclick="testKafka()">Test connection</button>
+      <button class="nc-btn" onclick="sendTestMessage()">Send test message</button>
     </div>
     <div class="settings-result" id="setResult"></div>
   </div>`;
@@ -1293,6 +1294,14 @@ async function testKafka(){
     if(s.ok){el.className="settings-result ok";el.textContent=`✓ Connected to ${s.broker} • ${s.topics_count} topics • '${s.topic}' ${s.topic_exists?"exists":"NOT found"}`;}
     else{el.className="settings-result err";el.textContent="✗ "+(s.error||"connection failed");}
   }catch(e){el.className="settings-result err";el.textContent="✗ test request failed";}
+}
+async function sendTestMessage(){
+  const el=document.getElementById("setResult");el.className="settings-result";el.textContent="Sending test message…";
+  try{const r=await fetch("/kafka/send-test",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
+    const s=await r.json();
+    if(s.ok){el.className="settings-result ok";el.textContent=`✓ Test message delivered to '${s.topic}' on ${s.broker}`;}
+    else{el.className="settings-result err";el.textContent="✗ "+(s.error||"not delivered");}
+  }catch(e){el.className="settings-result err";el.textContent="✗ send request failed";}
 }
 
 /* ---- cards ---- */

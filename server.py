@@ -286,6 +286,33 @@ def kafka_test_route():
     return jsonify(kafka_test(overrides))
 
 
+@app.route("/kafka/send-test", methods=["POST", "OPTIONS"])
+def kafka_send_test():
+    if request.method == "OPTIONS":
+        return ("", 204)
+    import time as _t
+    msg = {
+        "vehicle_id": "TEST-MESSAGE",
+        "message_type": "settings_test",
+        "event_timestamp": _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.gmtime()),
+        "source": "settings_page",
+        "note": "connectivity test from the dashboard Settings tab",
+    }
+    ok = publish_kafka("test-message", msg)
+    prod = get_producer()
+    delivered = False
+    if prod is not None and ok:
+        remaining = prod.flush(5)
+        delivered = (remaining == 0)
+    good = bool(ok and delivered)
+    return jsonify(
+        ok=good,
+        topic=SETTINGS["topic"],
+        broker=SETTINGS["broker"],
+        error=None if good else (_kafka["error"] or ("disabled" if not SETTINGS["enabled"] else "not delivered")),
+    )
+
+
 def _safe(name):
     return "".join(c for c in str(name) if c.isalnum() or c in "-_")[:64] or "session"
 
