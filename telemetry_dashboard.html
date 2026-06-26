@@ -409,7 +409,7 @@ function refreshCards(){
 }
 function liveTick(){
   nudgeTelemetry();
-  if(activeTab==="overview")renderOverview();else refreshCards();
+  refreshCards();                                   // update values in place — no full re-render (no flicker)
   if(activeTab==="location")updateFleetList();
 }
 
@@ -924,7 +924,7 @@ function emitAll(){
     if(NAV.tripT>=NAV.timeline.totalDur)onLegComplete();
   }
   bind(focusV());
-  if(activeTab==="navigation"||activeTab==="overview")selectTab(activeTab);
+  refreshCards();                                   // refresh visible card values in place (no flicker)
   updateFleetList();
 }
 /* ---- battery: state of charge drains with distance; derived telemetry follows ---- */
